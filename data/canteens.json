@@ -1,0 +1,47 @@
+[
+  {
+    "id": "canteen-east-1f",
+    "buildingId": "canteen-east",
+    "name": "东区食堂一楼",
+    "stalls": [
+      {
+        "name": "盖浇饭窗口",
+        "items": [
+          { "name": "红烧肉盖饭", "price": 15 },
+          { "name": "宫保鸡丁盖饭", "price": 13 },
+          { "name": "鱼香肉丝盖饭", "price": 12 }
+        ]
+      },
+      {
+        "name": "面食窗口",
+        "items": [
+          { "name": "牛肉面", "price": 12 },
+          { "name": "炸酱面", "price": 10 },
+          { "name": "米线", "price": 8 }
+        ]
+      }
+    ],
+    "updatedAt": "2026-06-06T10:00:00Z"
+  },
+  {
+    "id": "canteen-east-2f",
+    "buildingId": "canteen-east",
+    "name": "东区食堂二楼",
+    "stalls": [
+      {
+        "name": "麻辣烫窗口",
+        "items": [
+          { "name": "麻辣烫（自选）", "price": 18 }
+        ]
+      },
+      {
+        "name": "清真窗口",
+        "items": [
+          { "name": "兰州拉面", "price": 12 },
+          { "name": "手抓饭", "price": 20 }
+        ]
+      }
+    ],
+    "updatedAt": "2026-06-06T10:00:00Z"
+  }
+]
