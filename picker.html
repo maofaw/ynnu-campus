@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>坐标拾取工具 - 云师大校园地图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { display: flex; height: 100vh; font-family: -apple-system, sans-serif; }
+    #map { flex: 1; }
+    #panel {
+      width: 380px;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    h2 { font-size: 18px; margin-bottom: 8px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .coords { display: flex; gap: 8px; }
+    .coords input { flex: 1; background: #f5f5f5; font-family: monospace; }
+    .btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; }
+    .btn-save { background: #1890ff; color: white; }
+    .btn-save:hover { background: #40a9ff; }
+    .btn-export { background: #52c41a; color: white; }
+    .btn-export:hover { background: #73d13d; }
+    .btn-clear { background: #ff4d4f; color: white; }
+    .btn-clear:hover { background: #ff7875; }
+    .saved-list { max-height: 200px; overflow-y: auto; }
+    .saved-item { padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+    .saved-item .del { color: #ff4d4f; cursor: pointer; font-size: 16px; }
+    .counter { font-size: 12px; color: #999; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #52c41a; color: white; padding: 10px 24px; border-radius: 20px; font-size: 14px; z-index: 9999; }
+    .toast.error { background: #ff4d4f; }
+    @media (max-width: 768px) { body { flex-direction: column; } #panel { width: 100%; max-height: 45vh; } }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="panel">
+    <h2>📍 坐标拾取</h2>
+    <p style="font-size:13px;color:#999;">在地图上点击建筑位置，自动获取坐标</p>
+
+    <div class="form-group">
+      <label>建筑名称</label>
+      <input type="text" id="bld-name" placeholder="如：汇学楼">
+    </div>
+
+    <div class="form-group">
+      <label>分类</label>
+      <select id="bld-category">
+        <option value="teaching">教学楼 🔵</option>
+        <option value="canteen">食堂 🟠</option>
+        <option value="dormitory">宿舍楼 🟢</option>
+        <option value="landmark">地标/广场 🟡</option>
+        <option value="sports">体育场馆 🔴</option>
+        <option value="office">行政楼 ⚫</option>
+        <option value="library">图书馆 🟣</option>
+        <option value="other">其他 ⚪</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>坐标</label>
+      <div class="coords">
+        <input type="text" id="bld-lng" placeholder="经度" readonly>
+        <input type="text" id="bld-lat" placeholder="纬度" readonly>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>介绍</label>
+      <textarea id="bld-desc" placeholder="建筑介绍..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>标签（逗号分隔）</label>
+      <input type="text" id="bld-tags" placeholder="自习, 多媒体, 文学院">
+    </div>
+
+    <button class="btn btn-save" onclick="saveBuilding()">💾 保存此建筑</button>
+
+    <div>
+      <span class="counter" id="counter">已保存: 0 栋</span>
+      <button class="btn btn-export" style="margin-top:8px;" onclick="exportData()">📋 导出 JSON（复制到 buildings.json）</button>
+      <button class="btn btn-clear" style="margin-top:8px;" onclick="clearAll()">🗑️ 清空全部</button>
+    </div>
+
+    <div class="saved-list" id="saved-list"></div>
+
+    <hr style="border:none;border-top:1px solid #eee;">
+    <a href="/" style="color:#1890ff;text-decoration:none;font-size:13px;">← 回到地图主页</a>
+  </div>
+
+  <!-- 高德地图 -->
+  <script src="https://webapi.amap.com/maps?v=2.0&key=5001e1f6633447cc4b019a5c703970d2"></script>
+  <script>
+    const YNNU_CENTER = [102.8500, 24.8600];
+    let map;
+    let clickMarker;
+
+    function initMap() {
+      map = new AMap.Map('map', {
+        center: YNNU_CENTER,
+        zoom: 16,
+        mapStyle: 'amap://styles/light'
+      });
+
+      // 点击地图获取坐标
+      map.on('click', e => {
+        const [lng, lat] = [e.lnglat.getLng(), e.lnglat.getLat()];
+        document.getElementById('bld-lng').value = lng.toFixed(6);
+        document.getElementById('bld-lat').value = lat.toFixed(6);
+
+        // 移动临时标记
+        if (clickMarker) clickMarker.setMap(null);
+        clickMarker = new AMap.Marker({
+          position: [lng, lat],
+          icon: new AMap.Icon({
+            size: new AMap.Size(28, 36),
+            imageSize: new AMap.Size(28, 36),
+            image: 'data:image/svg+xml;base64,' + btoa(encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36"><path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.268 21.732 0 14 0z" fill="#ff4d4f"/><circle cx="14" cy="14" r="5" fill="white"/></svg>').replace(/%([0-9A-F]{2})/g, (_,p) => String.fromCharCode('0x'+p)))
+          })
+        }).setMap(map);
+
+        // 自动聚焦名称输入
+        document.getElementById('bld-name').focus();
+      });
+
+      loadExistingBuildings();
+      renderSavedList();
+    }
+
+    // 加载现有建筑到地图上（只读）
+    function loadExistingBuildings() {
+      fetch('/api/buildings')
+        .then(r => r.json())
+        .then(buildings => {
+          buildings.forEach(b => {
+            const colors = {
+              teaching:'#1890ff',canteen:'#fa8c16',dormitory:'#52c41a',
+              landmark:'#faad14',sports:'#f5222d',office:'#8c8c8c',library:'#722ed1',other:'#d9d9d9'
+            };
+            const color = colors[b.category] || '#d9d9d9';
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36"><path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.268 21.732 0 14 0z" fill="'+color+'"/><circle cx="14" cy="14" r="5" fill="white"/></svg>';
+            new AMap.Marker({
+              position: [b.lng, b.lat],
+              title: b.name,
+              icon: new AMap.Icon({
+                size: new AMap.Size(28, 36),
+                imageSize: new AMap.Size(28, 36),
+                image: 'data:image/svg+xml;base64,' + btoa(encodeURIComponent(svg).replace(/%([0-9A-F]{2})/g, (_,p) => String.fromCharCode('0x'+p)))
+              }),
+              label: {
+                content: '<div style="background:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">'+b.name+'</div>',
+                direction: 'top',
+                offset: new AMap.Pixel(0, -10)
+              }
+            }).setMap(map);
+          });
+        });
+    }
+
+    function getSavedBuildings() {
+      try { return JSON.parse(localStorage.getItem('ynnu-buildings') || '[]'); }
+      catch(e) { return []; }
+    }
+
+    function saveBuilding() {
+      const name = document.getElementById('bld-name').value.trim();
+      const category = document.getElementById('bld-category').value;
+      const lng = parseFloat(document.getElementById('bld-lng').value);
+      const lat = parseFloat(document.getElementById('bld-lat').value);
+      const description = document.getElementById('bld-desc').value.trim();
+      const tags = document.getElementById('bld-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+
+      if (!name || isNaN(lng) || isNaN(lat)) {
+        showToast('请点击地图选择位置，并填写建筑名称', 'error');
+        return;
+      }
+
+      const id = name.toLowerCase().replace(/[^a-z0-9一-龥]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const now = new Date().toISOString();
+      const building = { id, name, category, description, lng, lat, images: [], tags, createdAt: now, updatedAt: now };
+
+      const saved = getSavedBuildings();
+      // 如果已有同 ID 建筑，替换
+      const idx = saved.findIndex(b => b.id === id);
+      if (idx >= 0) saved[idx] = building;
+      else saved.push(building);
+
+      localStorage.setItem('ynnu-buildings', JSON.stringify(saved));
+      renderSavedList();
+
+      // 清空表单
+      document.getElementById('bld-name').value = '';
+      document.getElementById('bld-desc').value = '';
+      document.getElementById('bld-tags').value = '';
+      if (clickMarker) clickMarker.setMap(null);
+
+      // 在地图上添加新标注
+      loadExistingBuildingsFromLocal(saved);
+
+      showToast('已保存: ' + name);
+    }
+
+    function loadExistingBuildingsFromLocal(buildings) {
+      // 清除之前的 local markers（简化处理：reload page）
+    }
+
+    function renderSavedList() {
+      const saved = getSavedBuildings();
+      document.getElementById('counter').textContent = '已保存: ' + saved.length + ' 栋';
+      document.getElementById('saved-list').innerHTML = saved.map((b, i) => `
+        <div class="saved-item">
+          <span>🏫 ${b.name} <span style="color:#999;font-size:11px;">(${b.lng.toFixed(4)}, ${b.lat.toFixed(4)})</span></span>
+          <span class="del" onclick="removeBuilding(${i})">×</span>
+        </div>
+      `).join('');
+    }
+
+    function removeBuilding(index) {
+      const saved = getSavedBuildings();
+      saved.splice(index, 1);
+      localStorage.setItem('ynnu-buildings', JSON.stringify(saved));
+      renderSavedList();
+      showToast('已删除');
+    }
+
+    function exportData() {
+      const saved = getSavedBuildings();
+      if (saved.length === 0) { showToast('没有数据可导出', 'error'); return; }
+      const json = JSON.stringify(saved, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        showToast('已复制到剪贴板！粘贴到 data/buildings.json 中');
+      }).catch(() => {
+        // fallback: show in textarea
+        const ta = document.createElement('textarea');
+        ta.value = json;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast('已复制到剪贴板！');
+      });
+    }
+
+    function clearAll() {
+      if (!confirm('确定清空所有已保存的建筑？')) return;
+      localStorage.removeItem('ynnu-buildings');
+      renderSavedList();
+      showToast('已清空');
+    }
+
+    function showToast(msg, type) {
+      const toast = document.createElement('div');
+      toast.className = 'toast' + (type === 'error' ? ' error' : '');
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
