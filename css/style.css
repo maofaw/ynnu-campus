@@ -149,6 +149,61 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 
 .btn-primary:hover { background: #40a9ff; }
 
+/* 导航按钮组 */
+.detail-nav-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.detail-nav-btns .btn-primary {
+  flex: 1;
+}
+
+.btn-outline {
+  flex: 1;
+  padding: 12px;
+  background: white;
+  color: #1890ff;
+  border: 1.5px solid #1890ff;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #e6f7ff;
+}
+
+.btn-text {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  color: #999;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-text:hover { color: #ff4d4f; }
+
+/* 路线 Toast */
+.route-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 9999;
+  white-space: nowrap;
+  animation: fadeInOut 4s ease;
+}
+
 /* 食堂菜单样式 */
 .canteen-floor {
   margin-bottom: 16px;
@@ -178,6 +233,72 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 }
 
 .price { font-weight: 500; color: #f5222d; }
+
+/* 起终点按钮 */
+.detail-route-section {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.btn-start, .btn-end {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px dashed #bbb;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.btn-start:hover { border-color: #1890ff; background: #e6f7ff; }
+.btn-end:hover { border-color: #f5222d; background: #fff1f0; }
+
+/* 路线浮动条 */
+#route-bar {
+  display: none;
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  font-size: 13px;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+#route-bar.active { display: flex; }
+
+.route-info { color: #333; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+
+.route-actions { display: flex; gap: 6px; }
+
+.route-mode-btn {
+  padding: 5px 12px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.route-mode-btn:hover { border-color: #1890ff; }
+
+.route-mode-btn.active-mode {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.route-clear { color: #999; border: none; font-weight: bold; }
+.route-clear:hover { color: #ff4d4f; border: none; }
 
 /* 标注标签 */
 .marker-label {
@@ -210,6 +331,63 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* 图层切换器 */
+#layer-switcher {
+  position: fixed;
+  top: 90px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  padding: 4px;
+}
+
+.layer-btn {
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.layer-btn:hover { background: #f0f0f0; }
+
+.layer-btn.active {
+  background: #1890ff;
+  color: white;
+}
+
+/* 定位按钮 */
+#locate-btn {
+  position: fixed;
+  bottom: 120px;
+  right: 16px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+
+#locate-btn:hover { transform: scale(1.1); }
+
+#locate-btn:active { transform: scale(0.95); }
 
 mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; }
 

@@ -43,5 +43,19 @@
       }
     ],
     "updatedAt": "2026-06-06T10:00:00Z"
+  },
+  {
+    "id": "canteen-qiyuan-1f",
+    "buildingId": "canteen-qiyuan-1",
+    "name": "启园一食堂一楼",
+    "stalls": [],
+    "updatedAt": "2026-06-06T13:00:00Z"
+  },
+  {
+    "id": "canteen-heyuan-1f",
+    "buildingId": "canteen-heyuan",
+    "name": "和园食堂",
+    "stalls": [],
+    "updatedAt": "2026-06-06T13:00:00Z"
   }
 ]

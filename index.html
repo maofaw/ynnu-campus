@@ -24,8 +24,13 @@
     <button id="detail-close">&times;</button>
   </div>
 
-  <!-- 高德地图 JS API -->
-  <script src="https://webapi.amap.com/maps?v=2.0&key=YOUR_AMAP_KEY"></script>
+  <!-- 高德地图 JS API（安全密钥必须在地图脚本之前声明） -->
+  <script>
+    window._AMapSecurityConfig = {
+      securityJsCode: 'a596b54c4cf3f4bda610e07acf349c95'
+    };
+  </script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=5001e1f6633447cc4b019a5c703970d2"></script>
   <script src="js/api.js"></script>
   <script src="js/search.js"></script>
   <script src="js/map.js"></script>
