@@ -71,6 +71,17 @@ app.get('/api/canteens/:id', (req, res) => {
   res.json(item);
 });
 
+// 认证路由
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+// 管理 API（需登录，挂载在 /api/admin 下避免与公开 GET 路由冲突）
+const buildingAdminRoutes = require('./routes/buildings');
+const canteenAdminRoutes = require('./routes/canteens');
+
+app.use('/api/admin/buildings', buildingAdminRoutes);
+app.use('/api/admin/canteens', canteenAdminRoutes);
+
 // 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

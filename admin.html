@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>后台管理 - 云师大校园地图</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 管理页独有样式 */
+    body { background: #f5f5f5; }
+    .admin-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+    /* 登录页 */
+    #login-page {
+      max-width: 360px;
+      margin: 100px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    #login-page h1 { text-align: center; margin-bottom: 24px; color: #333; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #555; }
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .form-group input:focus { border-color: #1890ff; outline: none; }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-login:hover { background: #40a9ff; }
+    .login-error { color: #ff4d4f; text-align: center; margin-top: 12px; display: none; }
+
+    /* 管理界面 */
+    #admin-page { display: none; }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 24px;
+    }
+    .admin-header h1 { font-size: 20px; }
+    .btn-logout { background: #f0f0f0; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+
+    .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+
+    .building-list {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .building-list-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .building-list-item:hover { background: #f0f5ff; }
+    .building-list-item.active { background: #e6f7ff; border-left: 3px solid #1890ff; }
+    .building-list-item .delete-btn {
+      background: none;
+      border: none;
+      color: #ff4d4f;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .building-list-item:hover .delete-btn { opacity: 1; }
+
+    .btn-add {
+      width: 100%;
+      padding: 10px;
+      border: 2px dashed #ddd;
+      background: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #999;
+      margin-top: 8px;
+    }
+    .btn-add:hover { border-color: #1890ff; color: #1890ff; }
+
+    .edit-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .edit-panel .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .edit-panel .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 16px; }
+    .btn-save { flex: 1; padding: 10px; background: #52c41a; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-cancel { flex: 1; padding: 10px; background: #f0f0f0; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-save:hover { background: #73d13d; }
+
+    .coords-row { display: flex; gap: 12px; }
+    .coords-row input { flex: 1; }
+
+    /* 标签编辑 */
+    .tags-input-wrapper { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .tag-editable {
+      display: inline-flex;
+      align-items: center;
+      background: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      gap: 4px;
+    }
+    .tag-editable .tag-remove { cursor: pointer; color: #999; }
+    .tag-editable .tag-remove:hover { color: #ff4d4f; }
+
+    .section-title { font-size: 16px; font-weight: 600; margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid #eee; }
+
+    /* 菜单编辑器 */
+    .stall-block {
+      background: #fafafa;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .menu-item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .menu-item-row input { flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+    .menu-item-row input.price-input { flex: 0 0 80px; }
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-small-add { background: #1890ff; color: white; }
+    .btn-small-del { background: #ff4d4f; color: white; }
+
+    .toast-success {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #52c41a;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 9999;
+      animation: fadeInOut 2s ease;
+    }
+
+    @media (max-width: 768px) {
+      .admin-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录页 -->
+  <div id="login-page">
+    <h1>🏫 后台管理</h1>
+    <div class="form-group">
+      <label>用户名</label>
+      <input type="text" id="login-username" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="login-password" placeholder="请输入密码">
+    </div>
+    <button class="btn-login" onclick="doLogin()">登录</button>
+    <p class="login-error" id="login-error">用户名或密码错误</p>
+  </div>
+
+  <!-- 管理界面 -->
+  <div id="admin-page">
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1>🏫 云师大校园地图后台</h1>
+        <div>
+          <a href="/" style="margin-right:16px;color:#1890ff;text-decoration:none;">← 回到地图</a>
+          <button class="btn-logout" onclick="doLogout()">退出</button>
+        </div>
+      </div>
+
+      <div class="admin-layout">
+        <!-- 左侧建筑列表 -->
+        <div>
+          <div class="building-list" id="building-list"></div>
+          <button class="btn-add" onclick="newBuilding()">+ 新增建筑</button>
+        </div>
+
+        <!-- 右侧编辑面板 -->
+        <div class="edit-panel" id="edit-panel">
+          <p style="color:#999;">← 从左侧选择一栋建筑开始编辑</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
