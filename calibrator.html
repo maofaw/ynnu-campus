@@ -225,7 +225,7 @@
     let originalData = '';    // 原始 JSON 字符串，用于还原
     let selectedId = null;
     let addMode = false;
-    let addClickHandler = null;
+    let addClickHandlerFn = null;  // 具名函数引用，用于正确移除监听
 
     // ── 初始化 ──
     function init() {
@@ -441,8 +441,14 @@
       document.getElementById('addModeHint').classList.add('active');
       document.getElementById('mapWrap').style.cursor = 'crosshair';
 
-      addClickHandler = map.on('click', e => {
+      // 具名函数，确保能正确移除
+      addClickHandlerFn = function(e) {
+        // 防止 prompt 堆积——如果已有 prompt 在显示，忽略后续点击
+        if (addClickHandlerFn._pending) return;
+        addClickHandlerFn._pending = true;
+
         const name = prompt('建筑名称：');
+        addClickHandlerFn._pending = false;
         if (!name) return;
 
         const id = 'custom-' + Date.now();
@@ -464,8 +470,9 @@
         selectBuilding(id);
         openEdit(id);
         showToast('✅ 已添加：' + name);
-      });
+      };
 
+      map.on('click', addClickHandlerFn);
       document.addEventListener('keydown', escHandler);
     }
 
@@ -477,7 +484,7 @@
       addMode = false;
       document.getElementById('addModeHint').classList.remove('active');
       document.getElementById('mapWrap').style.cursor = '';
-      if (addClickHandler) { AMap.Event.removeListener(addClickHandler); addClickHandler = null; }
+      if (addClickHandlerFn) { map.off('click', addClickHandlerFn); addClickHandlerFn = null; }
       document.removeEventListener('keydown', escHandler);
     }
 
