@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>坐标校准器 - 云师大校园地图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; height: 100vh; display: flex; }
+
+    /* 侧边栏 */
+    .sidebar {
+      width: 360px; min-width: 360px; height: 100vh;
+      display: flex; flex-direction: column;
+      background: #1a1a2e; color: #eee;
+    }
+    .sidebar-header {
+      padding: 16px; background: #16213e;
+      border-bottom: 1px solid #0f3460;
+    }
+    .sidebar-header h1 { font-size: 18px; margin-bottom: 4px; }
+    .sidebar-header p { font-size: 11px; color: #8899aa; }
+
+    .toolbar {
+      display: flex; gap: 6px; padding: 10px 16px;
+      background: #16213e; border-bottom: 1px solid #0f3460;
+      flex-wrap: wrap;
+    }
+    .toolbar button {
+      padding: 7px 12px; border: 1px solid #0f3460; border-radius: 6px;
+      background: #1a1a2e; color: #ccc; font-size: 12px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .toolbar button:hover { background: #0f3460; color: white; }
+    .toolbar button.primary { background: #e94560; border-color: #e94560; color: white; }
+    .toolbar button.primary:hover { background: #ff6b81; }
+    .toolbar button.success { background: #0f9b58; border-color: #0f9b58; color: white; }
+
+    .search-box { padding: 10px 16px; }
+    .search-box input {
+      width: 100%; padding: 8px 12px; border-radius: 6px;
+      border: 1px solid #0f3460; background: #16213e; color: white;
+      font-size: 13px; outline: none;
+    }
+    .search-box input:focus { border-color: #e94560; }
+
+    .stats { padding: 6px 16px; font-size: 11px; color: #8899aa; }
+
+    .building-list {
+      flex: 1; overflow-y: auto; padding: 0 12px 12px;
+    }
+    .building-list::-webkit-scrollbar { width: 4px; }
+    .building-list::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 4px; }
+
+    .building-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; margin-bottom: 4px;
+      border-radius: 8px; cursor: pointer;
+      transition: all 0.15s; border: 1px solid transparent;
+      background: #16213e;
+    }
+    .building-item:hover { border-color: #0f3460; background: #1a2744; }
+    .building-item.selected { border-color: #e94560; background: #1a1025; }
+
+    .item-color {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+    }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: 13px; font-weight: 500; }
+    .item-coords { font-size: 10px; color: #8899aa; margin-top: 2px; }
+    .item-cat {
+      font-size: 10px; padding: 2px 6px; border-radius: 4px;
+      color: white; white-space: nowrap;
+    }
+    .item-dirty { color: #faad14; font-size: 10px; margin-left: 4px; }
+
+    .map-wrap { flex: 1; position: relative; }
+
+    /* 坐标信息浮层 */
+    .coord-info {
+      position: absolute; bottom: 16px; left: 16px; z-index: 100;
+      background: rgba(0,0,0,0.8); color: white; padding: 8px 14px;
+      border-radius: 8px; font-size: 12px; font-family: monospace;
+      pointer-events: none;
+    }
+
+    /* 新增模式提示 */
+    .add-mode-hint {
+      display: none; position: absolute; top: 16px; left: 50%;
+      transform: translateX(-50%); z-index: 100;
+      background: #e94560; color: white; padding: 10px 20px;
+      border-radius: 20px; font-size: 14px; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(233,69,96,0.4);
+    }
+    .add-mode-hint.active { display: block; }
+
+    /* 编辑弹窗 */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #1a1a2e; border: 1px solid #0f3460; border-radius: 12px;
+      padding: 24px; width: 400px; max-width: 90vw; color: #eee;
+    }
+    .modal h2 { margin-bottom: 16px; font-size: 18px; }
+    .modal label { display: block; font-size: 12px; color: #8899aa; margin-bottom: 4px; margin-top: 10px; }
+    .modal input, .modal select, .modal textarea {
+      width: 100%; padding: 8px 12px; border-radius: 6px;
+      border: 1px solid #0f3460; background: #16213e; color: white;
+      font-size: 13px;
+    }
+    .modal textarea { resize: vertical; min-height: 60px; }
+    .modal-buttons { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+    .modal-buttons button {
+      padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px;
+    }
+    .btn-cancel { background: #333; color: #ccc; }
+    .btn-save { background: #e94560; color: white; }
+    .btn-delete { background: #c0392b; color: white; margin-right: auto; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #0f9b58; color: white; padding: 10px 24px; border-radius: 20px;
+      z-index: 9999; font-size: 14px; animation: fadeInOut 2.5s ease;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; min-width: 100%; height: 40vh; }
+      .map-wrap { height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>🎯 坐标校准器</h1>
+      <p>拖拽标注 = 更新坐标 | 点击地图 = 新增 | 导出保存</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="primary" onclick="enterAddMode()" title="在地图上点击放置新建筑">＋ 新增建筑</button>
+      <button onclick="importJSON()">📥 导入</button>
+      <button class="success" onclick="exportJSON()">📤 导出</button>
+      <button onclick="resetAll()" title="放弃所有未保存修改">↺ 还原</button>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔍 搜索建筑..." oninput="filterList()">
+    </div>
+
+    <div class="stats" id="stats">共 0 栋建筑</div>
+
+    <div class="building-list" id="buildingList"></div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <div class="coord-info" id="coordInfo">鼠标移动查看坐标</div>
+    <div class="add-mode-hint" id="addModeHint">👆 在地图上点击放置新建筑 (ESC取消)</div>
+  </div>
+
+  <!-- 编辑弹窗 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <h2 id="modalTitle">编辑建筑</h2>
+      <label>名称</label>
+      <input type="text" id="editName">
+      <label>分类</label>
+      <select id="editCategory">
+        <option value="teaching">教学楼</option>
+        <option value="canteen">食堂</option>
+        <option value="dormitory">宿舍楼</option>
+        <option value="landmark">地标广场</option>
+        <option value="sports">体育场馆</option>
+        <option value="office">行政楼</option>
+        <option value="library">图书馆</option>
+        <option value="other">其他</option>
+      </select>
+      <label>简介</label>
+      <textarea id="editDesc"></textarea>
+      <label>标签（逗号分隔）</label>
+      <input type="text" id="editTags" placeholder="食堂, 西区">
+      <label>坐标</label>
+      <input type="text" id="editCoords" readonly style="color:#8899aa;font-family:monospace;">
+      <div class="modal-buttons">
+        <button class="btn-delete" id="btnDelete" onclick="deleteBuilding()">🗑 删除</button>
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-save" onclick="saveEdit()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window._AMapSecurityConfig = { securityJsCode: 'a596b54c4cf3f4bda610e07acf349c95' };
+  </script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=5001e1f6633447cc4b019a5c703970d2"></script>
+  <script src="js/data.js"></script>
+  <script>
+    // ============================================
+    // 坐标校准器主逻辑
+    // ============================================
+
+    const CAT_COLORS = {
+      teaching: '#1890ff', canteen: '#fa8c16', dormitory: '#52c41a',
+      landmark: '#faad14', sports: '#f5222d', office: '#8c8c8c',
+      library: '#722ed1', other: '#d9d9d9'
+    };
+    const CAT_LABELS = {
+      teaching: '教学楼', canteen: '食堂', dormitory: '宿舍楼',
+      landmark: '地标广场', sports: '体育场馆', office: '行政楼',
+      library: '图书馆', other: '其他'
+    };
+
+    let map;
+    let markers = [];         // { building, marker }
+    let buildings = [];       // 当前编辑中的数据（深拷贝）
+    let originalData = '';    // 原始 JSON 字符串，用于还原
+    let selectedId = null;
+    let addMode = false;
+    let addClickHandler = null;
+
+    // ── 初始化 ──
+    function init() {
+      // 尝试从 EMBEDDED_BUILDINGS 加载
+      if (typeof EMBEDDED_BUILDINGS !== 'undefined') {
+        buildings = JSON.parse(JSON.stringify(EMBEDDED_BUILDINGS));
+      } else {
+        buildings = [];
+      }
+      // 统一 id 字段
+      buildings.forEach(b => { if (!b.id && b._id) b.id = b._id; });
+      originalData = JSON.stringify(buildings);
+
+      map = new AMap.Map('mapWrap', {
+        center: [102.8500, 24.8600],
+        zoom: 16,
+        mapStyle: 'amap://styles/light'
+      });
+
+      // 鼠标移动显示坐标
+      map.on('mousemove', e => {
+        document.getElementById('coordInfo').textContent =
+          `lng: ${e.lnglat.lng.toFixed(6)}  lat: ${e.lnglat.lat.toFixed(6)}`;
+      });
+
+      renderAllMarkers();
+      renderList();
+      updateStats();
+    }
+
+    // ── 渲染所有标注 ──
+    function renderAllMarkers() {
+      markers.forEach(m => m.marker.setMap(null));
+      markers = [];
+
+      buildings.forEach(b => {
+        if (typeof b.lng !== 'number' || typeof b.lat !== 'number') return;
+        const color = CAT_COLORS[b.category] || CAT_COLORS.other;
+
+        const marker = new AMap.Marker({
+          position: [b.lng, b.lat],
+          title: b.name,
+          draggable: true,
+          icon: new AMap.Icon({
+            size: new AMap.Size(28, 36),
+            imageSize: new AMap.Size(28, 36),
+            image: createMarkerSVG(color)
+          }),
+          zIndex: b.id === selectedId ? 200 : 100
+        });
+
+        // 点击标注 → 选中
+        marker.on('click', () => selectBuilding(b.id));
+
+        // 拖拽结束 → 更新坐标
+        marker.on('dragend', () => {
+          const pos = marker.getPosition();
+          b.lng = pos.lng;
+          b.lat = pos.lat;
+          renderList();
+          updateStats();
+          highlightDirty(b.id);
+        });
+
+        marker.setLabel({
+          content: `<div style="background:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.2);">${b.name}</div>`,
+          direction: 'top',
+          offset: new AMap.Pixel(0, -10)
+        });
+
+        marker.setMap(map);
+        markers.push({ building: b, marker });
+      });
+    }
+
+    function createMarkerSVG(color) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+        <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.268 21.732 0 14 0z" fill="${color}"/>
+        <circle cx="14" cy="14" r="5" fill="white"/>
+      </svg>`;
+      return 'data:image/svg+xml;base64,' + btoa(encodeURIComponent(svg).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
+    }
+
+    // ── 侧边栏列表 ──
+    function renderList(filter) {
+      const container = document.getElementById('buildingList');
+      let list = buildings;
+      if (filter) {
+        const kw = filter.toLowerCase();
+        list = buildings.filter(b => b.name.toLowerCase().includes(kw));
+      }
+
+      container.innerHTML = list.map(b => {
+        const color = CAT_COLORS[b.category] || CAT_COLORS.other;
+        const catLabel = CAT_LABELS[b.category] || '其他';
+        const isSelected = b.id === selectedId;
+        return `
+          <div class="building-item ${isSelected ? 'selected' : ''}"
+               onclick="selectBuilding('${b.id}')"
+               ondblclick="openEdit('${b.id}')">
+            <span class="item-color" style="background:${color}"></span>
+            <div class="item-info">
+              <div class="item-name">${b.name}</div>
+              <div class="item-coords">${b.lng.toFixed(6)}, ${b.lat.toFixed(6)}</div>
+            </div>
+            <span class="item-cat" style="background:${color}">${catLabel}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterList() {
+      const kw = document.getElementById('searchInput').value;
+      renderList(kw);
+    }
+
+    function updateStats() {
+      const changed = buildings.filter(b => {
+        const orig = JSON.parse(originalData).find(o => o.id === b.id);
+        return orig && (orig.lng !== b.lng || orig.lat !== b.lat);
+      }).length;
+      document.getElementById('stats').textContent =
+        `共 ${buildings.length} 栋建筑` + (changed > 0 ? ` · ${changed} 栋已修改` : '');
+    }
+
+    function highlightDirty(id) {
+      const items = document.querySelectorAll('.building-item');
+      items.forEach(el => {
+        if (el.querySelector('.item-name')?.textContent === buildings.find(b => b.id === id)?.name) {
+          const coordsEl = el.querySelector('.item-coords');
+          if (coordsEl && !coordsEl.querySelector('.item-dirty')) {
+            coordsEl.innerHTML += '<span class="item-dirty">●已修改</span>';
+          }
+        }
+      });
+    }
+
+    // ── 选中建筑 ──
+    function selectBuilding(id) {
+      selectedId = id;
+      const b = buildings.find(b => b.id === id);
+      if (!b) return;
+
+      map.setZoomAndCenter(18, [b.lng, b.lat]);
+      renderList(document.getElementById('searchInput').value || null);
+
+      // 高亮标注
+      markers.forEach(({ building, marker }) => {
+        const color = CAT_COLORS[building.category] || CAT_COLORS.other;
+        marker.setIcon(new AMap.Icon({
+          size: new AMap.Size(28, 36),
+          imageSize: new AMap.Size(28, 36),
+          image: createMarkerSVG(building.id === id ? '#e94560' : color)
+        }));
+        marker.setzIndex(building.id === id ? 200 : 100);
+      });
+    }
+
+    // ── 编辑弹窗 ──
+    function openEdit(id) {
+      const b = buildings.find(b => b.id === id);
+      if (!b) return;
+      document.getElementById('modalTitle').textContent = '编辑建筑';
+      document.getElementById('editName').value = b.name;
+      document.getElementById('editCategory').value = b.category || 'other';
+      document.getElementById('editDesc').value = b.description || '';
+      document.getElementById('editTags').value = (b.tags || []).join(', ');
+      document.getElementById('editCoords').value = `${b.lng.toFixed(6)}, ${b.lat.toFixed(6)}`;
+      document.getElementById('btnDelete').style.display = 'block';
+      document.getElementById('modalOverlay').classList.add('active');
+      document.getElementById('modalOverlay').dataset.editId = id;
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    function saveEdit() {
+      const id = document.getElementById('modalOverlay').dataset.editId;
+      const b = buildings.find(b => b.id === id);
+      if (!b) return;
+
+      b.name = document.getElementById('editName').value.trim() || b.name;
+      b.category = document.getElementById('editCategory').value;
+      b.description = document.getElementById('editDesc').value.trim();
+      b.tags = document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+      closeModal();
+      renderAllMarkers();
+      renderList(document.getElementById('searchInput').value || null);
+      selectBuilding(id);
+      updateStats();
+      showToast('✅ 已更新');
+    }
+
+    function deleteBuilding() {
+      const id = document.getElementById('modalOverlay').dataset.editId;
+      if (!confirm(`确定删除「${buildings.find(b => b.id === id)?.name}」？`)) return;
+
+      buildings = buildings.filter(b => b.id !== id);
+      if (selectedId === id) selectedId = null;
+      closeModal();
+      renderAllMarkers();
+      renderList();
+      updateStats();
+      showToast('🗑 已删除');
+    }
+
+    // ── 新增模式 ──
+    function enterAddMode() {
+      if (addMode) { cancelAddMode(); return; }
+      addMode = true;
+      document.getElementById('addModeHint').classList.add('active');
+      document.getElementById('mapWrap').style.cursor = 'crosshair';
+
+      addClickHandler = map.on('click', e => {
+        const name = prompt('建筑名称：');
+        if (!name) return;
+
+        const id = 'custom-' + Date.now();
+        const newBuilding = {
+          id, name,
+          category: 'other',
+          description: '',
+          lng: e.lnglat.lng,
+          lat: e.lnglat.lat,
+          images: [],
+          tags: []
+        };
+
+        buildings.push(newBuilding);
+        cancelAddMode();
+        renderAllMarkers();
+        renderList();
+        updateStats();
+        selectBuilding(id);
+        openEdit(id);
+        showToast('✅ 已添加：' + name);
+      });
+
+      document.addEventListener('keydown', escHandler);
+    }
+
+    function escHandler(e) {
+      if (e.key === 'Escape') cancelAddMode();
+    }
+
+    function cancelAddMode() {
+      addMode = false;
+      document.getElementById('addModeHint').classList.remove('active');
+      document.getElementById('mapWrap').style.cursor = '';
+      if (addClickHandler) { AMap.Event.removeListener(addClickHandler); addClickHandler = null; }
+      document.removeEventListener('keydown', escHandler);
+    }
+
+    // ── 导入导出 ──
+    function exportJSON() {
+      // 清理临时字段
+      const clean = buildings.map(({ id, name, category, description, lng, lat, images, tags, floors }) => {
+        const obj = { id, name, category, description, lng, lat, images: images || [], tags: tags || [] };
+        if (floors) obj.floors = floors;
+        return obj;
+      });
+
+      const blob = new Blob([JSON.stringify(clean, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'buildings.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📤 已导出 buildings.json');
+    }
+
+    function importJSON() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!Array.isArray(data)) throw new Error('格式错误：需要 JSON 数组');
+            buildings = data;
+            buildings.forEach(b => { if (!b.id && b._id) b.id = b._id; });
+            originalData = JSON.stringify(buildings);
+            selectedId = null;
+            renderAllMarkers();
+            renderList();
+            updateStats();
+            showToast(`📥 已导入 ${buildings.length} 栋建筑`);
+          } catch (err) {
+            alert('导入失败：' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    function resetAll() {
+      if (!confirm('确定还原到初始数据？所有未导出修改将丢失。')) return;
+      buildings = JSON.parse(originalData);
+      selectedId = null;
+      renderAllMarkers();
+      renderList();
+      updateStats();
+      showToast('↺ 已还原');
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    // 双击列表项编辑
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
