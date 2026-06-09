@@ -143,6 +143,127 @@ html, body {
   color: #999;
 }
 
+/* ── 近期活动滚动卡片 ── */
+.events-strip {
+  padding: 10px 16px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.events-strip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e94560;
+  margin-bottom: 8px;
+}
+
+.events-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.events-scroll::-webkit-scrollbar { height: 3px; }
+.events-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+.events-loading {
+  font-size: 12px;
+  color: #bbb;
+  padding: 8px 0;
+}
+
+.event-mini-card {
+  min-width: 200px;
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  border: 1px solid #ffe0e0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.event-mini-card:hover {
+  border-color: #e94560;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(233,69,96,0.1);
+}
+
+.event-mini-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-mini-meta {
+  font-size: 11px;
+  color: #999;
+}
+
+.event-mini-tag {
+  display: inline-block;
+  background: #e94560;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+/* 活动详情（在详情面板中） */
+.detail-events-section {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+  border: 1px solid #ffe0e0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.detail-events-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e94560;
+  margin-bottom: 8px;
+}
+
+.detail-event-item {
+  padding: 8px 0;
+  border-bottom: 1px dashed #ffe0e0;
+}
+
+.detail-event-item:last-child { border-bottom: none; }
+
+.detail-event-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.detail-event-meta {
+  font-size: 11px;
+  color: #999;
+}
+
+/* 活动角标（地图标注红点） */
+.event-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: #e94560;
+  border: 2px solid white;
+  border-radius: 50%;
+  z-index: 10;
+}
+
 /* ── 分类标签 ── */
 .category-tabs {
   display: flex;

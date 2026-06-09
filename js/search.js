@@ -11,23 +11,49 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 本地过滤
-    const matched = allBuildings.filter(b =>
-      b.name.toLowerCase().includes(keyword.toLowerCase()) ||
-      (b.tags || []).some(tag => tag.toLowerCase().includes(keyword.toLowerCase()))
-    );
+    // 本地过滤建筑
+    const matchedBuildings = typeof allBuildings !== 'undefined'
+      ? allBuildings.filter(b =>
+          b.name.toLowerCase().includes(keyword.toLowerCase()) ||
+          (b.tags || []).some(tag => tag.toLowerCase().includes(keyword.toLowerCase()))
+        )
+      : [];
 
-    if (matched.length === 0) {
-      results.innerHTML = '<li style="color:#999">未找到匹配的建筑</li>';
-    } else {
-      results.innerHTML = matched.slice(0, 8).map(b => `
-        <li onclick="selectBuilding('${b.id}')">
-          <span class="result-name">${highlightMatch(b.name, keyword)}</span>
-          <span class="result-category">${CATEGORY_LABELS[b.category] || '其他'}</span>
-        </li>
-      `).join('');
+    // 搜索活动
+    const matchedEvents = typeof allEvents !== 'undefined'
+      ? allEvents.filter(e =>
+          e.title.toLowerCase().includes(keyword.toLowerCase()) ||
+          e.organizer.toLowerCase().includes(keyword.toLowerCase()) ||
+          (e.tags || []).some(t => t.toLowerCase().includes(keyword.toLowerCase()))
+        ).slice(0, 3)
+      : [];
+
+    let html = '';
+
+    // 建筑结果
+    if (matchedBuildings.length > 0) {
+      matchedBuildings.slice(0, 5).forEach(b => {
+        html += `<li onclick="selectBuilding('${b.id}')">
+          <span class="result-name">🏢 ${highlightMatch(b.name, keyword)}</span>
+          <span class="result-category">${(typeof CATEGORY_LABELS !== 'undefined' && CATEGORY_LABELS[b.category]) || '其他'}</span>
+        </li>`;
+      });
     }
 
+    // 活动结果
+    matchedEvents.forEach(e => {
+      const bld = typeof allBuildings !== 'undefined' ? allBuildings.find(b => (b.id || b._id) === e.buildingId) : null;
+      html += `<li onclick="jumpToEvent('${e.id}')">
+        <span class="result-name">📢 ${highlightMatch(e.title, keyword)}</span>
+        <span class="result-category">${bld ? bld.name : e.organizer}</span>
+      </li>`;
+    });
+
+    if (!html) {
+      html = '<li style="color:#999">未找到匹配的建筑或活动</li>';
+    }
+
+    results.innerHTML = html;
     results.classList.add('show');
   });
 

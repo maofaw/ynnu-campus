@@ -1,0 +1,62 @@
+[
+  {
+    "id": "event-001",
+    "title": "2026届毕业生校园招聘会",
+    "buildingId": "ynnu-career-activity-west",
+    "startTime": "2026-06-15T09:00",
+    "endTime": "2026-06-15T17:00",
+    "organizer": "就业处",
+    "description": "面向2026届毕业生的专场招聘会，40+企业参会，涵盖教育、IT、金融等行业。请携带简历入场。",
+    "poster": "",
+    "registration": "现场参会，无需报名",
+    "tags": ["招聘会", "就业"]
+  },
+  {
+    "id": "event-002",
+    "title": "校园十大歌手大赛·决赛",
+    "buildingId": "ynnu-hongzhu-square",
+    "startTime": "2026-06-20T19:00",
+    "endTime": "2026-06-20T21:30",
+    "organizer": "校团委",
+    "description": "经过海选、复赛层层选拔，15位选手登上决赛舞台，争夺年度校园十大歌手称号。",
+    "poster": "",
+    "registration": "免票入场",
+    "tags": ["晚会", "文艺", "比赛"]
+  },
+  {
+    "id": "event-003",
+    "title": "学术讲座：西南联大精神的当代启示",
+    "buildingId": "ynnu-library",
+    "startTime": "2026-06-12T14:30",
+    "endTime": "2026-06-12T16:30",
+    "organizer": "历史学院",
+    "description": "特邀云南师范大学历史系教授主讲，回顾西南联大在昆明的办学历程，探讨其精神遗产对当代高等教育的启示。",
+    "poster": "",
+    "registration": "扫码报名",
+    "tags": ["讲座", "学术", "历史文化"]
+  },
+  {
+    "id": "event-004",
+    "title": "三人篮球赛·报名启动",
+    "buildingId": "ynnu-west-stadium",
+    "startTime": "2026-06-18T00:00",
+    "endTime": "2026-06-25T23:59",
+    "organizer": "体育学院",
+    "description": "第18届校园三人篮球赛开始报名！自由组队，3-4人一队，冠军奖金2000元。6月25日截止。",
+    "poster": "",
+    "registration": "公众号「云师大体育」在线报名",
+    "tags": ["竞赛", "体育", "篮球"]
+  },
+  {
+    "id": "event-005",
+    "title": "创新创业大赛·项目路演",
+    "buildingId": "ynnu-virtual-lab",
+    "startTime": "2026-06-22T14:00",
+    "endTime": "2026-06-22T18:00",
+    "organizer": "创新创业学院",
+    "description": "10个学生创业团队进行项目路演，评委现场点评打分，优胜项目可获得孵化和资金支持。",
+    "poster": "",
+    "registration": "路演现场开放观摩",
+    "tags": ["竞赛", "创业", "路演"]
+  }
+]

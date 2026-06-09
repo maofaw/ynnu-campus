@@ -225,11 +225,22 @@ function addUserMarker(pos) {
 // 数据加载 & 侧边栏卡片
 // ──────────────────────────────────
 
+let allEvents = [];  // 所有活动
+let eventsByBuilding = {}; // buildingId -> [events]
+
 async function loadBuildings() {
   try {
     allBuildings = await API.getAllLocations();
+    allEvents = await API.getEvents({ upcoming: true });
+    // 按 buildingId 建立索引
+    eventsByBuilding = {};
+    allEvents.forEach(e => {
+      if (!eventsByBuilding[e.buildingId]) eventsByBuilding[e.buildingId] = [];
+      eventsByBuilding[e.buildingId].push(e);
+    });
     renderMarkers(allBuildings);
     renderBuildingCards(allBuildings);
+    renderEventStrip(allEvents);
   } catch (err) {
     console.error('加载建筑数据失败:', err);
     showError('加载地图数据失败，请刷新页面重试');
@@ -292,6 +303,40 @@ function renderBuildingCards(buildings) {
   container.innerHTML = html;
 }
 
+// 侧边栏近期活动滚动卡片
+function renderEventStrip(events) {
+  const container = document.getElementById('events-scroll');
+  if (!events || events.length === 0) {
+    container.innerHTML = '<div class="events-loading">暂无近期活动</div>';
+    return;
+  }
+  container.innerHTML = events.slice(0, 5).map(e => {
+    const tag = (e.tags || [])[0] || '';
+    const date = formatEventDate(e.startTime);
+    return `
+      <div class="event-mini-card" onclick="jumpToEvent('${e.id}')">
+        <div class="event-mini-title">${e.title}</div>
+        <div class="event-mini-meta">📅 ${date} · ${e.organizer}</div>
+        ${tag ? `<span class="event-mini-tag">${tag}</span>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function formatEventDate(isoStr) {
+  const d = new Date(isoStr);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// 从活动卡片跳转到对应建筑
+function jumpToEvent(eventId) {
+  const event = allEvents.find(e => e.id === eventId);
+  if (!event) return;
+  const building = allBuildings.find(b => (b.id || b._id) === event.buildingId);
+  if (!building) return;
+  onCardClick(building.id || building._id);
+}
+
 // 点击侧边栏卡片
 function onCardClick(id) {
   const building = allBuildings.find(b => (b.id || b._id) === id);
@@ -343,6 +388,14 @@ function createMarker(building) {
     direction: 'top',
     offset: new AMap.Pixel(0, -10)
   });
+
+  // 有活动的建筑加红点角标
+  if (eventsByBuilding[building.id || building._id]) {
+    const badge = document.createElement('div');
+    badge.className = 'event-badge';
+    badge.title = `${eventsByBuilding[building.id || building._id].length} 个活动`;
+    marker.setContent(badge);
+  }
 
   marker.setMap(map);
   markers.push(marker);
@@ -411,6 +464,24 @@ function showDetail(building) {
     infoSection += `<div class="detail-info"><span class="info-label">👥 容量</span> ${building.capacity}人</div>`;
   }
 
+  // 活动板块
+  let eventsSection = '';
+  const bid = building.id || building._id;
+  if (eventsByBuilding[bid] && eventsByBuilding[bid].length > 0) {
+    eventsSection = `
+      <div class="detail-events-section">
+        <div class="detail-events-title">📢 本场活动</div>
+        ${eventsByBuilding[bid].map(e => `
+          <div class="detail-event-item">
+            <div class="detail-event-name">${e.title}</div>
+            <div class="detail-event-meta">📅 ${formatEventDate(e.startTime)} ~ ${formatEventDate(e.endTime)} · ${e.organizer}</div>
+            <div class="detail-event-meta">📝 ${e.registration}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   // 食堂菜单
   let extraSection = '';
   if (building.category === 'canteen') {
@@ -429,6 +500,7 @@ function showDetail(building) {
     <div class="detail-tags">${tags}</div>
     <p class="detail-desc">${building.description || '暂无介绍'}</p>
     ${infoSection ? `<div class="detail-info-section">${infoSection}</div>` : ''}
+    ${eventsSection}
     ${extraSection}
     <div class="detail-route-section">
       <button class="btn-start" onclick="setRouteStart(${building.lng},${building.lat},'${escapeHtml(building.name)}')">📍 设为起点</button>

@@ -82,6 +82,37 @@ const canteenAdminRoutes = require('./routes/canteens');
 app.use('/api/admin/buildings', buildingAdminRoutes);
 app.use('/api/admin/canteens', canteenAdminRoutes);
 
+// ── 活动 API ──
+app.get('/api/events', (req, res) => {
+  const events = readJSON(path.join(__dirname, 'data', 'events.json'));
+  const { buildingId, upcoming, tag } = req.query;
+
+  let result = events;
+
+  if (buildingId) {
+    result = result.filter(e => e.buildingId === buildingId);
+  }
+  if (tag) {
+    result = result.filter(e => (e.tags || []).includes(tag));
+  }
+  // 按开始时间排序（最近的在前）
+  result.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+  if (upcoming === 'true') {
+    const now = new Date().toISOString();
+    result = result.filter(e => e.endTime >= now);
+  }
+
+  res.json(result);
+});
+
+app.get('/api/events/:id', (req, res) => {
+  const events = readJSON(path.join(__dirname, 'data', 'events.json'));
+  const event = events.find(e => e.id === req.params.id);
+  if (!event) return res.status(404).json({ error: '活动不存在' });
+  res.json(event);
+});
+
 // 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

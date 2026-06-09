@@ -63,6 +63,33 @@ const API = (() => {
     async getAllLocations() {
       const buildings = await this.getBuildings();
       return buildings.filter(b => typeof b.lng === 'number' && typeof b.lat === 'number');
+    },
+
+    // ── 活动 ──
+    async getEvents(params = {}) {
+      try {
+        let url = '/api/events';
+        const q = [];
+        if (params.buildingId) q.push(`buildingId=${encodeURIComponent(params.buildingId)}`);
+        if (params.tag) q.push(`tag=${encodeURIComponent(params.tag)}`);
+        if (params.upcoming) q.push('upcoming=true');
+        if (q.length) url += '?' + q.join('&');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) { return []; }
+    },
+
+    async getEvent(id) {
+      try {
+        const res = await fetch(`/api/events/${encodeURIComponent(id)}`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (err) { return null; }
+    },
+
+    async getEventsByBuilding(buildingId) {
+      return this.getEvents({ buildingId, upcoming: true });
     }
   };
 
@@ -117,6 +144,28 @@ const API = (() => {
 
     async getAllLocations() {
       return EMBEDDED_BUILDINGS.filter(b => typeof b.lng === 'number' && typeof b.lat === 'number');
+    },
+
+    // ── 活动 ──
+    async getEvents(params = {}) {
+      let events = typeof EMBEDDED_EVENTS !== 'undefined' ? EMBEDDED_EVENTS : [];
+      if (params.buildingId) events = events.filter(e => e.buildingId === params.buildingId);
+      if (params.tag) events = events.filter(e => (e.tags || []).includes(params.tag));
+      events.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      if (params.upcoming) {
+        const now = new Date().toISOString();
+        events = events.filter(e => e.endTime >= now);
+      }
+      return events;
+    },
+
+    async getEvent(id) {
+      const events = typeof EMBEDDED_EVENTS !== 'undefined' ? EMBEDDED_EVENTS : [];
+      return events.find(e => e.id === id) || null;
+    },
+
+    async getEventsByBuilding(buildingId) {
+      return this.getEvents({ buildingId, upcoming: true });
     }
   };
 
