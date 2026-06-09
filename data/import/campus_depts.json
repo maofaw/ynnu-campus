@@ -1,0 +1,54 @@
+[
+  {
+    "id": "ynnu-admin-building",
+    "name": "行政楼",
+    "category": "office",
+    "description": "学校行政办公主楼",
+    "lng": 102.853885,
+    "lat": 24.858814,
+    "officeHours": "08:30-12:00, 14:00-17:30",
+    "phone": "0871-65911111",
+    "services": ["校级行政事务", "文件盖章", "综合协调"],
+    "images": [],
+    "tags": ["行政", "办公"]
+  },
+  {
+    "id": "ynnu-career-center",
+    "name": "就业处",
+    "category": "office",
+    "description": "大学生活动中心一楼，负责学生就业指导与服务",
+    "lng": 102.850104,
+    "lat": 24.858354,
+    "officeHours": "09:00-12:00, 14:00-17:00",
+    "phone": "0871-65912222",
+    "services": ["就业咨询", "三方协议签约", "招聘信息发布", "职业规划指导"],
+    "images": [],
+    "tags": ["行政", "就业"]
+  },
+  {
+    "id": "ynnu-student-affairs",
+    "name": "学生处(学生工作部)",
+    "category": "office",
+    "description": "东区工程中心三楼301室，负责学生日常管理与服务",
+    "lng": 102.850105,
+    "lat": 24.858311,
+    "officeHours": "09:00-12:00, 14:00-17:00",
+    "phone": "0871-65913333",
+    "services": ["学生证办理", "奖助学金申请", "住宿管理", "学生事务咨询"],
+    "images": [],
+    "tags": ["行政", "学生服务"]
+  },
+  {
+    "id": "ynnu-career-activity-west",
+    "name": "大学生就业活动中心(西区)",
+    "category": "office",
+    "description": "秋获路云南师范大学(呈贡校区)，招聘会场与就业活动场地",
+    "lng": 102.850014,
+    "lat": 24.85821,
+    "officeHours": "09:00-17:00（活动期间）",
+    "phone": "",
+    "services": ["招聘会场地", "宣讲会", "就业活动"],
+    "images": [],
+    "tags": ["行政", "活动中心", "就业"]
+  }
+]

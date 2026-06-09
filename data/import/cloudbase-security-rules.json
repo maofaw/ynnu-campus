@@ -1,0 +1,18 @@
+{
+  "campus_buildings": {
+    "read": true,
+    "write": false
+  },
+  "campus_canteens": {
+    "read": true,
+    "write": false
+  },
+  "campus_depts": {
+    "read": true,
+    "write": false
+  },
+  "campus_events": {
+    "read": true,
+    "write": false
+  }
+}

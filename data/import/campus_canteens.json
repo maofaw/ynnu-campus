@@ -1,0 +1,140 @@
+[
+  {
+    "id": "canteen-east",
+    "name": "东区食堂",
+    "category": "canteen",
+    "description": "呈贡校区东区，双层食堂，人均¥15",
+    "lng": 102.859577,
+    "lat": 24.862218,
+    "openTime": "06:30-20:30",
+    "images": [],
+    "tags": ["食堂", "餐饮", "东区"],
+    "floors": [
+      {
+        "name": "一楼",
+        "stalls": [
+          {
+            "name": "盖浇饭窗口",
+            "items": [
+              { "name": "红烧肉盖饭", "price": 15 },
+              { "name": "宫保鸡丁盖饭", "price": 13 },
+              { "name": "鱼香肉丝盖饭", "price": 12 },
+              { "name": "糖醋里脊盖饭", "price": 14 }
+            ]
+          },
+          {
+            "name": "面食窗口",
+            "items": [
+              { "name": "牛肉面", "price": 12 },
+              { "name": "炸酱面", "price": 10 },
+              { "name": "米线", "price": 8 },
+              { "name": "酸辣粉", "price": 9 }
+            ]
+          },
+          {
+            "name": "自选快餐",
+            "items": [
+              { "name": "两荤一素", "price": 12 },
+              { "name": "两荤两素", "price": 14 },
+              { "name": "三荤一素", "price": 16 }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "二楼",
+        "stalls": [
+          {
+            "name": "麻辣烫窗口",
+            "items": [
+              { "name": "麻辣烫（自选）", "price": 18 },
+              { "name": "麻辣拌", "price": 16 }
+            ]
+          },
+          {
+            "name": "清真窗口",
+            "items": [
+              { "name": "兰州拉面", "price": 12 },
+              { "name": "手抓饭", "price": 20 },
+              { "name": "大盘鸡", "price": 25 }
+            ]
+          },
+          {
+            "name": "砂锅窗口",
+            "items": [
+              { "name": "砂锅米线", "price": 13 },
+              { "name": "砂锅饭", "price": 15 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "canteen-qiyuan-1",
+    "name": "启园一食堂",
+    "category": "canteen",
+    "description": "西区启园一楼，学生主要食堂，人均¥14",
+    "lng": 102.845743,
+    "lat": 24.861917,
+    "openTime": "06:30-20:30",
+    "images": [],
+    "tags": ["食堂", "西区", "启园"],
+    "floors": [
+      {
+        "name": "一楼",
+        "stalls": [
+          {
+            "name": "大众快餐",
+            "items": [
+              { "name": "一荤一素", "price": 10 },
+              { "name": "两荤一素", "price": 13 },
+              { "name": "两荤两素", "price": 15 }
+            ]
+          },
+          {
+            "name": "面点窗口",
+            "items": [
+              { "name": "小笼包", "price": 8 },
+              { "name": "蒸饺", "price": 10 },
+              { "name": "馄饨", "price": 9 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "canteen-heyuan",
+    "name": "和园食堂",
+    "category": "canteen",
+    "description": "东区和园，环境较好，人均¥17",
+    "lng": 102.859547,
+    "lat": 24.862517,
+    "openTime": "06:30-21:00",
+    "images": [],
+    "tags": ["食堂", "东区", "和园"],
+    "floors": [
+      {
+        "name": "一楼",
+        "stalls": [
+          {
+            "name": "特色小炒",
+            "items": [
+              { "name": "回锅肉", "price": 18 },
+              { "name": "水煮肉片", "price": 20 },
+              { "name": "麻婆豆腐", "price": 12 }
+            ]
+          },
+          {
+            "name": "铁板窗口",
+            "items": [
+              { "name": "铁板牛肉饭", "price": 22 },
+              { "name": "铁板鸡肉饭", "price": 18 }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "event-001",
+    "title": "2026届毕业生夏季招聘会",
+    "location": "大学生就业活动中心(西区)",
+    "lng": 102.850014,
+    "lat": 24.85821,
+    "startTime": "2026-06-20T09:00:00+08:00",
+    "endTime": "2026-06-20T17:00:00+08:00",
+    "status": "upcoming",
+    "description": "面向全校毕业生的夏季综合招聘会，预计100+企业参会",
+    "organizer": "就业处",
+    "capacity": 3000
+  },
+  {
+    "id": "event-002",
+    "title": "校园文化艺术节",
+    "location": "红烛广场",
+    "lng": 102.848506,
+    "lat": 24.860144,
+    "startTime": "2026-09-15T19:00:00+08:00",
+    "endTime": "2026-09-15T21:30:00+08:00",
+    "status": "upcoming",
+    "description": "年度校园文化艺术节开幕式暨文艺汇演",
+    "organizer": "校团委",
+    "capacity": 2000
+  },
+  {
+    "id": "event-003",
+    "title": "学术讲座：人工智能与教育创新",
+    "location": "图书馆报告厅",
+    "lng": 102.854184,
+    "lat": 24.861987,
+    "startTime": "2026-06-12T14:30:00+08:00",
+    "endTime": "2026-06-12T16:30:00+08:00",
+    "status": "upcoming",
+    "description": "特邀北京大学教授主讲，探讨AI在教育领域的应用前景",
+    "organizer": "科学技术处",
+    "capacity": 300
+  }
+]

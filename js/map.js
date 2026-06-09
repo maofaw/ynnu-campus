@@ -220,10 +220,10 @@ function addUserMarker(pos) {
   });
 }
 
-// 加载并渲染建筑标注
+// 加载并渲染建筑标注（聚合 campus_buildings + campus_canteens + campus_depts）
 async function loadBuildings() {
   try {
-    allBuildings = await API.getBuildings();
+    allBuildings = await API.getAllLocations();
     renderMarkers(allBuildings);
   } catch (err) {
     console.error('加载建筑数据失败:', err);
@@ -285,7 +285,7 @@ function addMarker(building) {
   renderMarkers([...allBuildings]);
 }
 
-// 显示建筑详情
+// 显示建筑详情（适配 CloudBase 四个集合的字段）
 function showDetail(building) {
   const panel = document.getElementById('detail-panel');
   const content = document.getElementById('detail-content');
@@ -296,11 +296,38 @@ function showDetail(building) {
     `<img src="${img}" alt="${building.name}" class="detail-image" onerror="this.style.display='none'">`
   ).join('');
 
-  // 如果是食堂，特殊展示
+  // 信息行
+  let infoSection = '';
+  // 开放时间
+  if (building.openTime) {
+    infoSection += `<div class="detail-info"><span class="info-label">🕐 开放时间</span> ${building.openTime}</div>`;
+  }
+  // 行政部门特有
+  if (building.officeHours) {
+    infoSection += `<div class="detail-info"><span class="info-label">🕐 办公时间</span> ${building.officeHours}</div>`;
+  }
+  if (building.phone) {
+    infoSection += `<div class="detail-info"><span class="info-label">📞 电话</span> ${building.phone}</div>`;
+  }
+  if (building.services && building.services.length) {
+    infoSection += `<div class="detail-info"><span class="info-label">📋 办理业务</span> ${building.services.join('、')}</div>`;
+  }
+  // 活动特有
+  if (building.organizer) {
+    infoSection += `<div class="detail-info"><span class="info-label">👤 主办</span> ${building.organizer}</div>`;
+  }
+  if (building.startTime) {
+    infoSection += `<div class="detail-info"><span class="info-label">📅 时间</span> ${building.startTime} ~ ${building.endTime}</div>`;
+  }
+  if (building.capacity) {
+    infoSection += `<div class="detail-info"><span class="info-label">👥 容量</span> ${building.capacity}人</div>`;
+  }
+
+  // 食堂菜单
   let extraSection = '';
   if (building.category === 'canteen') {
     extraSection = `<div class="detail-extra">
-      <button class="btn-primary" onclick="loadCanteenMenu('${building.id}')">查看菜单</button>
+      <button class="btn-primary" onclick="loadCanteenMenu('${building.id || building._id}')">🍴 查看菜单</button>
       <div id="canteen-menu"></div>
     </div>`;
   }
@@ -313,10 +340,11 @@ function showDetail(building) {
     ${images ? `<div class="detail-images">${images}</div>` : ''}
     <div class="detail-tags">${tags}</div>
     <p class="detail-desc">${building.description || '暂无介绍'}</p>
+    ${infoSection ? `<div class="detail-info-section">${infoSection}</div>` : ''}
     ${extraSection}
     <div class="detail-route-section">
-      <button class="btn-start" onclick="setRouteStart(${building.lng},${building.lat},'${building.name.replace(/'/g, "\\'")}')">📍 设为起点</button>
-      <button class="btn-end" onclick="setRouteEnd(${building.lng},${building.lat},'${building.name.replace(/'/g, "\\'")}')">🏁 设为终点</button>
+      <button class="btn-start" onclick="setRouteStart(${building.lng},${building.lat},'${escapeHtml(building.name)}')">📍 设为起点</button>
+      <button class="btn-end" onclick="setRouteEnd(${building.lng},${building.lat},'${escapeHtml(building.name)}')">🏁 设为终点</button>
     </div>
     <div class="detail-nav-btns">
       <button class="btn-primary" onclick="navigateTo(${building.lng},${building.lat},'walking')">🚶 步行导航</button>
@@ -329,6 +357,13 @@ function showDetail(building) {
   panel.classList.add('detail-visible');
 }
 
+// 转义 HTML 字符，防止 XSS
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 // 关闭详情面板
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('detail-close').addEventListener('click', () => {
@@ -338,24 +373,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// 加载食堂菜单
+// 加载食堂菜单（适配 CloudBase 后的 floors 结构）
 async function loadCanteenMenu(buildingId) {
   const menuDiv = document.getElementById('canteen-menu');
   menuDiv.innerHTML = '<p>加载中...</p>';
   try {
-    const canteens = await API.getCanteens();
-    const items = canteens.filter(c => c.buildingId === buildingId);
-    if (items.length === 0) {
+    // 先从内存中找（allBuildings 已包含 campus_canteens 数据）
+    let canteen = allBuildings.find(b => b._id === buildingId || b.id === buildingId);
+
+    // 如果内存中没有 floors 数据，从 API 补充
+    if (!canteen || !canteen.floors) {
+      const fresh = await API.getCanteen(buildingId);
+      if (fresh) canteen = fresh;
+    }
+
+    if (!canteen || !canteen.floors || canteen.floors.length === 0) {
       menuDiv.innerHTML = '<p>暂无菜单信息</p>';
       return;
     }
-    menuDiv.innerHTML = items.map(c => `
+
+    menuDiv.innerHTML = canteen.floors.map(floor => `
       <div class="canteen-floor">
-        <h4>${c.name}</h4>
-        ${c.stalls.map(stall => `
+        <h4>${floor.name}</h4>
+        ${(floor.stalls || []).map(stall => `
           <div class="stall">
             <div class="stall-name">${stall.name}</div>
-            ${stall.items.map(item => `
+            ${(stall.items || []).map(item => `
               <div class="menu-item">
                 <span>${item.name}</span>
                 <span class="price">¥${item.price}</span>
