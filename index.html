@@ -7,33 +7,90 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- 搜索栏 -->
-  <div id="search-bar">
-    <div class="search-wrapper">
-      <input type="text" id="search-input" placeholder="🔍 搜索教学楼、食堂、宿舍..." autocomplete="off">
-      <ul id="search-results"></ul>
+  <div class="main-container">
+    <!-- 左侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <!-- 学校简介 -->
+      <div class="intro-section">
+        <div class="intro-header">
+          <span class="intro-icon">🎓</span>
+          <div>
+            <h2>云南师范大学（呈贡校区）</h2>
+            <p>智慧校园导览系统</p>
+          </div>
+        </div>
+        <p class="intro-desc">云南师范大学前身是1938年抗战期间北大、清华、南开南迁昆明组建的西南联合大学师范学院，坐落于春城昆明。</p>
+        <div class="intro-stats">
+          <div class="stat-item"><div class="stat-num">38</div><div class="stat-label">栋建筑</div></div>
+          <div class="stat-item"><div class="stat-num">8</div><div class="stat-label">种分类</div></div>
+          <div class="stat-item"><div class="stat-num">375万+</div><div class="stat-label">图书馆藏书</div></div>
+        </div>
+      </div>
+
+      <!-- 搜索 -->
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="🔍 搜索教学楼、食堂、宿舍..." autocomplete="off">
+        <ul id="search-results"></ul>
+      </div>
+
+      <!-- 分类标签 -->
+      <div class="category-tabs" id="category-tabs">
+        <button class="cat-tab active" data-category="all">全部</button>
+        <button class="cat-tab" data-category="teaching">🏢 教学楼</button>
+        <button class="cat-tab" data-category="canteen">🍜 食堂</button>
+        <button class="cat-tab" data-category="dormitory">🏠 宿舍</button>
+        <button class="cat-tab" data-category="sports">⚽ 体育</button>
+        <button class="cat-tab" data-category="office">🏛️ 行政</button>
+        <button class="cat-tab" data-category="library">📚 图书馆</button>
+        <button class="cat-tab" data-category="landmark">📍 地标</button>
+      </div>
+
+      <!-- 建筑卡片列表 -->
+      <div class="cards-container" id="cards-container">
+        <div class="cards-loading">加载中...</div>
+      </div>
+    </aside>
+
+    <!-- 地图容器 -->
+    <div id="map-container">
+      <!-- 图例 -->
+      <div class="map-legend" id="map-legend">
+        <div class="legend-title">图例</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#1890ff"></span>教学楼</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#fa8c16"></span>食堂</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#52c41a"></span>宿舍楼</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#f5222d"></span>体育场馆</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#8c8c8c"></span>行政楼</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#722ed1"></span>图书馆</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#faad14"></span>地标广场</div>
+      </div>
+
+      <!-- 图层切换 -->
+      <div class="map-controls-right">
+        <button class="control-btn active" id="vectorBtn" title="矢量地图">🗺️</button>
+        <button class="control-btn" id="satelliteBtn" title="卫星地图">🛰️</button>
+        <button class="control-btn" id="locateBtn" title="定位">📍</button>
+      </div>
+
+      <!-- 图层指示 -->
+      <div class="layer-indicator" id="layer-indicator">🗺️ 矢量地图</div>
     </div>
   </div>
 
-  <!-- 地图容器 -->
-  <div id="map-container"></div>
-
-  <!-- 建筑详情侧边栏 -->
+  <!-- 建筑详情底部面板 -->
   <div id="detail-panel" class="detail-hidden">
     <div id="detail-content"></div>
     <button id="detail-close">&times;</button>
   </div>
 
-  <!-- 高德地图 JS API（安全密钥必须在地图脚本之前声明） -->
+  <!-- 高德地图 JS API -->
   <script>
     window._AMapSecurityConfig = {
       securityJsCode: 'a596b54c4cf3f4bda610e07acf349c95'
     };
   </script>
   <script src="https://webapi.amap.com/maps?v=2.0&key=5001e1f6633447cc4b019a5c703970d2"></script>
-  <!-- CloudBase 云开发 SDK -->
-  <script src="https://web.sdk.qcloud.com/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script src="js/cloudbase.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/api.js"></script>
   <script src="js/search.js"></script>
   <script src="js/map.js"></script>

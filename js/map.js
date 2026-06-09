@@ -4,11 +4,12 @@ const YNNU_CENTER = [102.8500, 24.8600];
 let map;
 let markers = [];
 let allBuildings = [];
-let walkingRoute = null;    // 步行路线对象
-let drivingRoute = null;    // 驾车路线对象
-let currentPosition = null; // 用户当前位置
-let routeStart = null;      // 路线起点 {lng, lat, name}
-let routeEnd = null;        // 路线终点 {lng, lat, name}
+let walkingRoute = null;
+let drivingRoute = null;
+let currentPosition = null;
+let routeStart = null;
+let routeEnd = null;
+let currentCategory = 'all';
 
 // 分类对应图标颜色
 const CATEGORY_COLORS = {
@@ -33,8 +34,19 @@ const CATEGORY_LABELS = {
   other: '其他'
 };
 
+const CATEGORY_ICONS = {
+  teaching: '🏢',
+  canteen: '🍜',
+  dormitory: '🏠',
+  landmark: '📍',
+  sports: '⚽',
+  office: '🏛️',
+  library: '📚',
+  other: '📌'
+};
+
 // 图层状态
-let currentLayer = 'normal'; // 'normal' | 'satellite'
+let currentLayer = 'normal';
 
 // 初始化地图
 function initMap() {
@@ -55,42 +67,33 @@ function initMap() {
   // 加载建筑数据
   loadBuildings();
 
-  // 添加图层切换器
-  addLayerSwitcher();
-
-  // 添加定位按钮
-  addLocateButton();
+  // 绑定图层切换按钮
+  bindControls();
 }
 
-// 图层切换器
-function addLayerSwitcher() {
-  const switcher = document.createElement('div');
-  switcher.id = 'layer-switcher';
-  switcher.innerHTML = `
-    <button class="layer-btn active" data-layer="normal">🗺️ 标准</button>
-    <button class="layer-btn" data-layer="satellite">🛰️ 卫星</button>
-  `;
-  document.body.appendChild(switcher);
+// 绑定控制按钮
+function bindControls() {
+  document.getElementById('vectorBtn').addEventListener('click', () => switchLayer('normal'));
+  document.getElementById('satelliteBtn').addEventListener('click', () => switchLayer('satellite'));
+  document.getElementById('locateBtn').addEventListener('click', locateMe);
 
-  // 绑定点击事件
-  switcher.querySelectorAll('.layer-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const layer = btn.dataset.layer;
-      switchLayer(layer);
-      switcher.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  // 分类标签
+  document.querySelectorAll('.cat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCategory = tab.dataset.category;
+      renderBuildingCards(allBuildings);
+      filterMarkers();
     });
   });
-}
 
-// 定位按钮
-function addLocateButton() {
-  const locateBtn = document.createElement('button');
-  locateBtn.id = 'locate-btn';
-  locateBtn.innerHTML = '📍';
-  locateBtn.title = '定位到我的位置';
-  locateBtn.addEventListener('click', locateMe);
-  document.body.appendChild(locateBtn);
+  // 关闭详情面板
+  document.getElementById('detail-close').addEventListener('click', () => {
+    const panel = document.getElementById('detail-panel');
+    panel.classList.remove('detail-visible');
+    panel.classList.add('detail-hidden');
+  });
 }
 
 // 切换图层
@@ -98,31 +101,39 @@ function switchLayer(type) {
   if (currentLayer === type) return;
   currentLayer = type;
 
+  const vBtn = document.getElementById('vectorBtn');
+  const sBtn = document.getElementById('satelliteBtn');
+  const indicator = document.getElementById('layer-indicator');
+
   if (type === 'satellite') {
-    // 卫星图 + 路网标注
     map.setLayers([
       new AMap.TileLayer.Satellite(),
       new AMap.TileLayer.RoadNet()
     ]);
+    sBtn.classList.add('active');
+    vBtn.classList.remove('active');
+    indicator.textContent = '🛰️ 卫星地图';
   } else {
-    // 标准矢量地图
     map.setLayers([new AMap.TileLayer()]);
+    vBtn.classList.add('active');
+    sBtn.classList.remove('active');
+    indicator.textContent = '🗺️ 矢量地图';
   }
 }
 
-let userMarker = null;     // 用户位置标注
-let userCircle = null;     // 定位精度圈
-let geolocation = null;    // 高德定位实例
+let userMarker = null;
+let userCircle = null;
+let geolocation = null;
 
-// 初始化高德定位（页面加载时静默执行，精度更高）
+// 初始化高德定位
 function getCurrentPosition() {
   map.plugin('AMap.Geolocation', () => {
     geolocation = new AMap.Geolocation({
-      enableHighAccuracy: true,    // 高精度
+      enableHighAccuracy: true,
       timeout: 10000,
-      showMarker: false,           // 我们自己画标注
+      showMarker: false,
       showCircle: false,
-      panToLocation: false         // 不自动移动地图
+      panToLocation: false
     });
 
     geolocation.getCurrentPosition((status, result) => {
@@ -136,10 +147,9 @@ function getCurrentPosition() {
   });
 }
 
-// 主动定位——点击按钮触发，移动地图到用户位置
+// 主动定位
 function locateMe() {
   if (!geolocation) {
-    // 还没初始化，用浏览器定位降级
     if (navigator.geolocation) {
       showToast('正在定位...');
       navigator.geolocation.getCurrentPosition(
@@ -162,8 +172,6 @@ function locateMe() {
       currentPosition = [result.position.lng, result.position.lat];
       addUserMarker(currentPosition);
       map.setZoomAndCenter(17, currentPosition);
-
-      // 显示定位精度
       const acc = result.accuracy ? ` (精度${result.accuracy}米)` : '';
       showToast(`📍 已定位${acc}`);
     } else {
@@ -172,7 +180,7 @@ function locateMe() {
   });
 }
 
-// 在地图上画用户标记（可拖拽微调）
+// 在地图上画用户标记
 function addUserMarker(pos) {
   if (userMarker) { userMarker.setMap(null); }
   userMarker = new AMap.Marker({
@@ -185,21 +193,18 @@ function addUserMarker(pos) {
     zIndex: 100,
     title: '我的位置（可拖拽微调）',
     anchor: 'center',
-    draggable: true       // 可拖拽
+    draggable: true
   });
   userMarker.setMap(map);
 
-  // 拖拽结束后更新坐标
   userMarker.on('dragend', () => {
     const p = userMarker.getPosition();
     currentPosition = [p.lng, p.lat];
     showToast('📍 位置已更新，可拖拽蓝点继续微调');
   });
 
-  // 清除旧精度圈
   if (userCircle) { userCircle.setMap(null); }
 
-  // 显示精度圈（约 50 米参考圈）
   userCircle = new AMap.Circle({
     center: pos,
     radius: 50,
@@ -211,60 +216,150 @@ function addUserMarker(pos) {
     zIndex: 99
   });
   userCircle.setMap(map);
-  // 拖拽时圈跟随移动
-  userMarker.on('dragging', () => {
-    userCircle.setCenter(userMarker.getPosition());
-  });
-  userMarker.on('dragend', () => {
-    userCircle.setCenter(userMarker.getPosition());
-  });
+
+  userMarker.on('dragging', () => { userCircle.setCenter(userMarker.getPosition()); });
+  userMarker.on('dragend', () => { userCircle.setCenter(userMarker.getPosition()); });
 }
 
-// 加载并渲染建筑标注（聚合 campus_buildings + campus_canteens + campus_depts）
+// ──────────────────────────────────
+// 数据加载 & 侧边栏卡片
+// ──────────────────────────────────
+
 async function loadBuildings() {
   try {
     allBuildings = await API.getAllLocations();
     renderMarkers(allBuildings);
+    renderBuildingCards(allBuildings);
   } catch (err) {
     console.error('加载建筑数据失败:', err);
     showError('加载地图数据失败，请刷新页面重试');
   }
 }
 
-// 在地图上渲染标注
+// 渲染侧边栏建筑卡片
+function renderBuildingCards(buildings) {
+  const container = document.getElementById('cards-container');
+
+  // 按分类筛选
+  let filtered = buildings;
+  if (currentCategory !== 'all') {
+    filtered = buildings.filter(b => b.category === currentCategory);
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="no-results">暂无匹配的建筑</div>';
+    return;
+  }
+
+  // 按分类分组
+  const grouped = {};
+  filtered.forEach(b => {
+    const cat = b.category || 'other';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(b);
+  });
+
+  let html = '';
+
+  for (const [cat, items] of Object.entries(grouped)) {
+    // 全部模式下显示分类标题
+    if (currentCategory === 'all') {
+      html += `<div class="category-section-title">${CATEGORY_ICONS[cat] || '📌'} ${CATEGORY_LABELS[cat] || cat} · ${items.length}栋</div>`;
+    }
+
+    items.forEach(b => {
+      const catColor = CATEGORY_COLORS[b.category] || CATEGORY_COLORS.other;
+      const catIcon = CATEGORY_ICONS[b.category] || '📌';
+      const catLabel = CATEGORY_LABELS[b.category] || '其他';
+      const desc = b.description || '暂无介绍';
+      const tags = (b.tags || []).slice(0, 3);
+
+      html += `
+        <div class="building-card cat-${b.category || 'other'}" data-id="${b.id || b._id}" onclick="onCardClick('${b.id || b._id}')">
+          <div class="card-icon-wrap cat-${b.category || 'other'}">${catIcon}</div>
+          <div class="card-info">
+            <div class="card-title">${b.name}</div>
+            <span class="card-category" style="background:${catColor}">${catLabel}</span>
+            <div class="card-desc">${desc}</div>
+            ${tags.length ? `<div class="card-tags">${tags.map(t => `<span class="card-tag">${t}</span>`).join('')}</div>` : ''}
+          </div>
+          <span class="card-arrow">›</span>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+// 点击侧边栏卡片
+function onCardClick(id) {
+  const building = allBuildings.find(b => (b.id || b._id) === id);
+  if (!building) return;
+
+  // 高亮卡片
+  document.querySelectorAll('.building-card').forEach(c => c.classList.remove('active-card'));
+  const card = document.querySelector(`.building-card[data-id="${id}"]`);
+  if (card) card.classList.add('active-card');
+
+  // 地图飞向目标
+  map.setZoomAndCenter(18, [building.lng, building.lat]);
+
+  // 显示详情面板
+  showDetail(building);
+}
+
+// ──────────────────────────────────
+// 地图标注
+// ──────────────────────────────────
+
 function renderMarkers(buildings) {
-  // 清除旧标注
   clearMarkers();
-
   buildings.forEach(building => {
-    const color = CATEGORY_COLORS[building.category] || CATEGORY_COLORS.other;
-
-    const marker = new AMap.Marker({
-      position: [building.lng, building.lat],
-      title: building.name,
-      icon: new AMap.Icon({
-        size: new AMap.Size(28, 36),
-        imageSize: new AMap.Size(28, 36),
-        image: createMarkerSVG(color)
-      })
-    });
-
-    // 点击标注显示详情
-    marker.on('click', () => showDetail(building));
-
-    // 悬停显示名称
-    marker.setLabel({
-      content: `<div class="marker-label">${building.name}</div>`,
-      direction: 'top',
-      offset: new AMap.Pixel(0, -10)
-    });
-
-    marker.setMap(map);
-    markers.push(marker);
+    createMarker(building);
   });
 }
 
-// 用 SVG data URI 生成彩色标注图标
+function createMarker(building) {
+  const color = CATEGORY_COLORS[building.category] || CATEGORY_COLORS.other;
+  const marker = new AMap.Marker({
+    position: [building.lng, building.lat],
+    title: building.name,
+    icon: new AMap.Icon({
+      size: new AMap.Size(28, 36),
+      imageSize: new AMap.Size(28, 36),
+      image: createMarkerSVG(color)
+    }),
+    // 存储分类以便筛选
+    extData: { category: building.category }
+  });
+
+  marker.on('click', () => {
+    onCardClick(building.id || building._id);
+  });
+
+  marker.setLabel({
+    content: `<div class="marker-label">${building.name}</div>`,
+    direction: 'top',
+    offset: new AMap.Pixel(0, -10)
+  });
+
+  marker.setMap(map);
+  markers.push(marker);
+}
+
+// 按分类筛选标注
+function filterMarkers() {
+  markers.forEach(m => {
+    const cat = m.getExtData()?.category;
+    if (currentCategory === 'all' || cat === currentCategory) {
+      m.show();
+    } else {
+      m.hide();
+    }
+  });
+}
+
 function createMarkerSVG(color) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
     <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.268 21.732 0 14 0z" fill="${color}"/>
@@ -273,19 +368,15 @@ function createMarkerSVG(color) {
   return 'data:image/svg+xml;base64,' + btoa(encodeURIComponent(svg).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
 }
 
-// 清除所有标注
 function clearMarkers() {
   markers.forEach(m => m.setMap(null));
   markers = [];
 }
 
-// 在地图上标注单栋建筑
-function addMarker(building) {
-  markers.push(building);
-  renderMarkers([...allBuildings]);
-}
+// ──────────────────────────────────
+// 建筑详情面板
+// ──────────────────────────────────
 
-// 显示建筑详情（适配 CloudBase 四个集合的字段）
 function showDetail(building) {
   const panel = document.getElementById('detail-panel');
   const content = document.getElementById('detail-content');
@@ -298,11 +389,9 @@ function showDetail(building) {
 
   // 信息行
   let infoSection = '';
-  // 开放时间
   if (building.openTime) {
     infoSection += `<div class="detail-info"><span class="info-label">🕐 开放时间</span> ${building.openTime}</div>`;
   }
-  // 行政部门特有
   if (building.officeHours) {
     infoSection += `<div class="detail-info"><span class="info-label">🕐 办公时间</span> ${building.officeHours}</div>`;
   }
@@ -312,7 +401,6 @@ function showDetail(building) {
   if (building.services && building.services.length) {
     infoSection += `<div class="detail-info"><span class="info-label">📋 办理业务</span> ${building.services.join('、')}</div>`;
   }
-  // 活动特有
   if (building.organizer) {
     infoSection += `<div class="detail-info"><span class="info-label">👤 主办</span> ${building.organizer}</div>`;
   }
@@ -357,31 +445,21 @@ function showDetail(building) {
   panel.classList.add('detail-visible');
 }
 
-// 转义 HTML 字符，防止 XSS
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
-// 关闭详情面板
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('detail-close').addEventListener('click', () => {
-    const panel = document.getElementById('detail-panel');
-    panel.classList.remove('detail-visible');
-    panel.classList.add('detail-hidden');
-  });
-});
+// ──────────────────────────────────
+// 食堂菜单
+// ──────────────────────────────────
 
-// 加载食堂菜单（适配 CloudBase 后的 floors 结构）
 async function loadCanteenMenu(buildingId) {
   const menuDiv = document.getElementById('canteen-menu');
   menuDiv.innerHTML = '<p>加载中...</p>';
   try {
-    // 先从内存中找（allBuildings 已包含 campus_canteens 数据）
-    let canteen = allBuildings.find(b => b._id === buildingId || b.id === buildingId);
-
-    // 如果内存中没有 floors 数据，从 API 补充
+    let canteen = allBuildings.find(b => (b._id || b.id) === buildingId);
     if (!canteen || !canteen.floors) {
       const fresh = await API.getCanteen(buildingId);
       if (fresh) canteen = fresh;
@@ -413,7 +491,10 @@ async function loadCanteenMenu(buildingId) {
   }
 }
 
-// 设置路线起点
+// ──────────────────────────────────
+// 路线规划
+// ──────────────────────────────────
+
 function setRouteStart(lng, lat, name) {
   routeStart = { lng, lat, name };
   showToast(`📍 起点：${name}`);
@@ -421,7 +502,6 @@ function setRouteStart(lng, lat, name) {
   if (routeEnd) planRoute();
 }
 
-// 设置路线终点
 function setRouteEnd(lng, lat, name) {
   routeEnd = { lng, lat, name };
   showToast(`🏁 终点：${name}`);
@@ -429,7 +509,6 @@ function setRouteEnd(lng, lat, name) {
   if (routeStart) planRoute();
 }
 
-// 路线信息浮动条
 function updateRouteBar() {
   let bar = document.getElementById('route-bar');
   if (!bar) {
@@ -451,7 +530,6 @@ function updateRouteBar() {
       </span>
     `;
     bar.classList.add('active');
-    // 自动规划步行路线
     planRoute('walking');
   } else if (routeStart || routeEnd) {
     bar.innerHTML = `
@@ -462,7 +540,6 @@ function updateRouteBar() {
   }
 }
 
-// 从起点到终点规划路线
 function planRoute(mode) {
   if (!routeStart || !routeEnd) return;
   mode = mode || 'walking';
@@ -503,22 +580,8 @@ function planRoute(mode) {
       });
     });
   }
-
-  // 更新浮动条中的按钮状态
-  updateRouteBarButtons(mode);
 }
 
-function updateRouteBarButtons(activeMode) {
-  const bar = document.getElementById('route-bar');
-  if (!bar) return;
-  bar.querySelectorAll('.route-mode-btn').forEach(btn => {
-    btn.classList.remove('active-mode');
-  });
-  const activeBtn = bar.querySelector(`[onclick*="${activeMode}"]`);
-  if (activeBtn) activeBtn.classList.add('active-mode');
-}
-
-// 清除所有路线和起终点
 function clearAllRoutes() {
   clearRoutes();
   routeStart = null;
@@ -528,19 +591,16 @@ function clearAllRoutes() {
   showToast('已清除路线');
 }
 
-// 清除已绘制的路线
 function clearRoutes() {
   if (walkingRoute) { walkingRoute.clear(); walkingRoute = null; }
   if (drivingRoute) { drivingRoute.clear(); drivingRoute = null; }
 }
 
-// 导航功能 —— 在地图上直接绘制路线
 function navigateTo(lng, lat, mode) {
   mode = mode || 'walking';
   const start = currentPosition || YNNU_CENTER;
   const end = [lng, lat];
 
-  // 清除旧路线
   clearRoutes();
 
   if (mode === 'walking') {
@@ -576,7 +636,10 @@ function navigateTo(lng, lat, mode) {
   }
 }
 
-// 轻提示
+// ──────────────────────────────────
+// 辅助函数
+// ──────────────────────────────────
+
 function showToast(msg) {
   const toast = document.createElement('div');
   toast.className = 'route-toast';
@@ -585,7 +648,6 @@ function showToast(msg) {
   setTimeout(() => toast.remove(), 4000);
 }
 
-// 显示错误提示
 function showError(msg) {
   const toast = document.createElement('div');
   toast.className = 'toast-error';
@@ -594,5 +656,5 @@ function showError(msg) {
   setTimeout(() => toast.remove(), 3000);
 }
 
-// 页面加载完成后初始化地图
+// 页面加载完成后初始化
 window.onload = initMap;

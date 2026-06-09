@@ -1,79 +1,414 @@
-/* 基础重置 */
+/* ============================================
+   云师大校园地图 — 样式
+   ============================================ */
+
+/* ── 基础重置 ── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-
-/* 地图容器全屏 */
-#map-container { width: 100%; height: 100%; }
-
-/* 搜索栏 */
-#search-bar {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 90%;
-  max-width: 480px;
+html, body {
+  width: 100%; height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+  overflow: hidden;
 }
 
-.search-wrapper { position: relative; }
+/* ── 主布局：侧边栏 + 地图 ── */
+.main-container {
+  display: flex;
+  width: 100%; height: 100%;
+}
+
+/* ============================================
+   侧边栏
+   ============================================ */
+.sidebar {
+  width: 380px;
+  min-width: 380px;
+  height: 100%;
+  background: #f5f6f8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.06);
+}
+
+/* ── 学校简介 ── */
+.intro-section {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
+  padding: 18px 20px;
+  flex-shrink: 0;
+}
+
+.intro-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.intro-icon {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.intro-header h2 { font-size: 16px; font-weight: 600; }
+.intro-header p { font-size: 11px; opacity: 0.85; }
+
+.intro-desc {
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.92;
+  margin-bottom: 12px;
+}
+
+.intro-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  background: rgba(255,255,255,0.13);
+  padding: 8px 4px;
+  border-radius: 8px;
+}
+
+.stat-num { font-size: 18px; font-weight: 700; }
+.stat-label { font-size: 10px; opacity: 0.85; margin-top: 2px; }
+
+/* ── 搜索框 ── */
+.search-box {
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  position: relative;
+}
 
 #search-input {
   width: 100%;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 24px;
-  font-size: 15px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  padding: 10px 14px;
+  border: 2px solid #e8e8e8;
+  border-radius: 10px;
+  font-size: 14px;
   outline: none;
-  transition: box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 
-#search-input:focus { box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+#search-input:focus { border-color: #1565c0; }
 
 #search-results {
   display: none;
   position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 8px;
+  top: calc(100% - 4px);
+  left: 16px;
+  right: 16px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
   list-style: none;
   overflow: hidden;
-  max-height: 280px;
+  max-height: 240px;
   overflow-y: auto;
+  z-index: 100;
 }
 
 #search-results.show { display: block; }
 
 #search-results li {
-  padding: 12px 16px;
+  padding: 10px 14px;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f5f5f5;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 13px;
+  transition: background 0.15s;
 }
 
-#search-results li:hover { background: #f5f5f5; }
+#search-results li:hover { background: #f0f5ff; }
 
-#search-results li .result-name { font-weight: 500; }
+#search-results li .result-name { font-weight: 500; flex: 1; }
 
 #search-results li .result-category {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
-  margin-left: auto;
 }
 
-/* 详情面板 */
+/* ── 分类标签 ── */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.cat-tab {
+  padding: 6px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 18px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.cat-tab:hover { border-color: #1565c0; color: #1565c0; }
+
+.cat-tab.active {
+  background: #1565c0;
+  color: white;
+  border-color: #1565c0;
+}
+
+/* ── 建筑卡片列表 ── */
+.cards-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 16px 16px;
+}
+
+.cards-container::-webkit-scrollbar { width: 5px; }
+.cards-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+.cards-loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* 分类小标题 */
+.category-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  padding: 8px 4px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 单张卡片 */
+.building-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: all 0.2s;
+  border-left: 4px solid transparent;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.building-card:hover {
+  transform: translateX(3px);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.building-card.active-card {
+  border-left-color: #1565c0;
+  background: #f0f5ff;
+  box-shadow: 0 2px 10px rgba(21,101,192,0.12);
+}
+
+/* 卡片分类色条 */
+.building-card.cat-teaching { border-left-color: #1890ff; }
+.building-card.cat-canteen  { border-left-color: #fa8c16; }
+.building-card.cat-dormitory { border-left-color: #52c41a; }
+.building-card.cat-landmark  { border-left-color: #faad14; }
+.building-card.cat-sports    { border-left-color: #f5222d; }
+.building-card.cat-office    { border-left-color: #8c8c8c; }
+.building-card.cat-library   { border-left-color: #722ed1; }
+
+.card-icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.card-icon-wrap.cat-teaching { background: #e6f7ff; }
+.card-icon-wrap.cat-canteen  { background: #fff7e6; }
+.card-icon-wrap.cat-dormitory { background: #f6ffed; }
+.card-icon-wrap.cat-landmark  { background: #fffbe6; }
+.card-icon-wrap.cat-sports    { background: #fff1f0; }
+.card-icon-wrap.cat-office    { background: #f5f5f5; }
+.card-icon-wrap.cat-library   { background: #f9f0ff; }
+
+.card-info { flex: 1; min-width: 0; }
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.card-category {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.card-tag {
+  font-size: 10px;
+  background: #f0f0f0;
+  color: #888;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.card-arrow {
+  color: #ccc;
+  font-size: 14px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* ── 无结果 ── */
+.no-results {
+  text-align: center;
+  padding: 30px;
+  color: #bbb;
+  font-size: 13px;
+}
+
+/* ============================================
+   地图区域
+   ============================================ */
+#map-container {
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+/* ── 图例 ── */
+.map-legend {
+  position: absolute;
+  bottom: 24px;
+  left: 12px;
+  z-index: 100;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.legend-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 11px;
+  color: #666;
+}
+
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── 右侧控制按钮组 ── */
+.map-controls-right {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-btn {
+  width: 38px; height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.control-btn:hover { transform: scale(1.06); }
+
+.control-btn.active {
+  background: #1565c0;
+  color: white;
+}
+
+/* ── 图层指示 ── */
+.layer-indicator {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: white;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #555;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* ============================================
+   底部详情面板（保留）
+   ============================================ */
 #detail-panel {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 380px;
   right: 0;
   z-index: 1000;
   background: white;
@@ -135,19 +470,20 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 
 .detail-desc { color: #333; line-height: 1.7; margin-bottom: 16px; }
 
-/* 详情信息区（开放时间、办公时间、电话、业务等） */
 .detail-info-section {
   background: #f7f8fa;
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 14px;
 }
+
 .detail-info {
   font-size: 13px;
   color: #555;
   padding: 4px 0;
   line-height: 1.6;
 }
+
 .detail-info .info-label {
   font-weight: 600;
   color: #333;
@@ -168,16 +504,13 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 
 .btn-primary:hover { background: #40a9ff; }
 
-/* 导航按钮组 */
 .detail-nav-btns {
   display: flex;
   gap: 10px;
   margin-bottom: 8px;
 }
 
-.detail-nav-btns .btn-primary {
-  flex: 1;
-}
+.detail-nav-btns .btn-primary { flex: 1; }
 
 .btn-outline {
   flex: 1;
@@ -191,9 +524,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   transition: all 0.2s;
 }
 
-.btn-outline:hover {
-  background: #e6f7ff;
-}
+.btn-outline:hover { background: #e6f7ff; }
 
 .btn-text {
   width: 100%;
@@ -278,7 +609,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 #route-bar {
   display: none;
   position: fixed;
-  top: 76px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001;
@@ -344,6 +675,8 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   animation: fadeInOut 3s ease;
 }
 
+mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; }
+
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
   10% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -351,69 +684,34 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   100% { opacity: 0; }
 }
 
-/* 图层切换器 */
-#layer-switcher {
-  position: fixed;
-  top: 90px;
-  right: 12px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  padding: 4px;
-}
-
-.layer-btn {
-  padding: 8px 14px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s;
-}
-
-.layer-btn:hover { background: #f0f0f0; }
-
-.layer-btn.active {
-  background: #1890ff;
-  color: white;
-}
-
-/* 定位按钮 */
-#locate-btn {
-  position: fixed;
-  bottom: 120px;
-  right: 16px;
-  z-index: 1000;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s;
-}
-
-#locate-btn:hover { transform: scale(1.1); }
-
-#locate-btn:active { transform: scale(0.95); }
-
-mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; }
-
-/* 响应式 */
+/* ============================================
+   响应式
+   ============================================ */
 @media (max-width: 768px) {
-  #search-bar { width: 94%; top: 12px; }
-  #search-input { padding: 10px 14px; font-size: 14px; }
-  #detail-panel { max-height: 60vh; padding: 20px 16px 28px; }
+  .main-container { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: 45vh;
+    order: 2;
+  }
+
+  #map-container {
+    height: 55vh;
+    order: 1;
+  }
+
+  .intro-desc { display: none; }
+
+  #detail-panel {
+    left: 0;
+    max-height: 65vh;
+    padding: 20px 16px 28px;
+  }
+
   #detail-panel h2 { font-size: 20px; }
+
+  .map-legend { bottom: 8px; left: 8px; padding: 6px 10px; }
+  .map-legend .legend-item { font-size: 10px; }
 }

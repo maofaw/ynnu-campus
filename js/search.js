@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 本地过滤（不发起网络请求）
+    // 本地过滤
     const matched = allBuildings.filter(b =>
       b.name.toLowerCase().includes(keyword.toLowerCase()) ||
       (b.tags || []).some(tag => tag.toLowerCase().includes(keyword.toLowerCase()))
@@ -31,14 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     results.classList.add('show');
   });
 
-  // 点击地图空白处关闭搜索结果
-  document.getElementById('map-container').addEventListener('click', () => {
-    results.classList.remove('show');
-  });
-
   // 点击输入框外部关闭搜索结果
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('#search-bar')) {
+    if (!e.target.closest('.search-box')) {
       results.classList.remove('show');
     }
   });
@@ -52,7 +47,15 @@ function selectBuilding(id) {
   // 地图飞向目标
   map.setZoomAndCenter(18, [building.lng, building.lat]);
 
-  // 显示详情
+  // 高亮侧边栏卡片
+  document.querySelectorAll('.building-card').forEach(c => c.classList.remove('active-card'));
+  const card = document.querySelector(`.building-card[data-id="${id}"]`);
+  if (card) {
+    card.classList.add('active-card');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // 显示详情面板
   showDetail(building);
 
   // 关闭搜索结果
