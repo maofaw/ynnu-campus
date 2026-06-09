@@ -4,14 +4,14 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // 解析 JSON 请求体
 app.use(express.json());
 
 // Session 配置（管理登录用）
 app.use(session({
-  secret: 'ynnu-campus-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET || 'ynnu-campus-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 小时

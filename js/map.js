@@ -210,7 +210,7 @@ function addUserMarker(pos) {
     fillOpacity: 0.08,
     zIndex: 99
   });
-  circle.setMap(map);
+  userCircle.setMap(map);
   // 拖拽时圈跟随移动
   userMarker.on('dragging', () => {
     userCircle.setCenter(userMarker.getPosition());
