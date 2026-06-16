@@ -110,6 +110,24 @@
     <button id="detail-close">&times;</button>
   </div>
 
+  <!-- 帮助按钮（仅手机端） -->
+  <button id="help-btn" class="help-btn">❓</button>
+
+  <!-- 帮助弹窗遮罩 -->
+  <div id="help-overlay" class="help-overlay">
+    <div class="help-dialog" onclick="event.stopPropagation()">
+      <div class="help-title">📖 使用说明</div>
+      <div class="help-body">
+        <div class="help-item">🗺️ <b>地图操作</b><br>双指缩放 · 单指拖动</div>
+        <div class="help-item">🔍 <b>搜索建筑</b><br>输入名称或拼音搜索</div>
+        <div class="help-item">🧭 <b>路线导航</b><br>设起点→终点，步行/驾车</div>
+        <div class="help-item">🌤️ <b>天气查看</b><br>侧边栏显示实时天气</div>
+        <div class="help-item">📅 <b>校园活动</b><br>查看近期活动日历</div>
+      </div>
+      <button class="help-close" id="help-close">✕ 关闭</button>
+    </div>
+  </div>
+
   <!-- 高德地图 JS API -->
   <script>
     window._AMapSecurityConfig = {

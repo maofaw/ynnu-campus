@@ -96,6 +96,35 @@ function bindControls() {
     panel.classList.remove('detail-visible');
     panel.classList.add('detail-hidden');
   });
+
+  // 帮助按钮事件（M3 — 仅手机端）
+  const helpBtn = document.getElementById('help-btn');
+  const helpOverlay = document.getElementById('help-overlay');
+  const helpClose = document.getElementById('help-close');
+  if (helpBtn && helpOverlay) {
+    helpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      helpOverlay.classList.add('show');
+    });
+    if (helpClose) {
+      helpClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        helpOverlay.classList.remove('show');
+      });
+    }
+    helpOverlay.addEventListener('click', () => {
+      helpOverlay.classList.remove('show');
+    });
+  }
+
+  // 手机端抽屉触摸拖拽（M2）
+  initDrawerDrag();
+
+  // 抽屉初始半开
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) { sidebar.classList.add('drawer-half'); }
+  }
 }
 
 // 切换图层
@@ -839,6 +868,62 @@ function hideMarkersExcept(startObj, endObj) {
 function restoreAllMarkers(buildings) {
   clearMarkers();
   buildings.forEach(b => createMarker(b));
+}
+
+// ──────────────────────────────────
+// 手机端抽屉触摸拖拽（M2）
+// ──────────────────────────────────
+function initDrawerDrag() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
+  let startY = 0;
+  let currentTranslate = 0;
+  let dragging = false;
+
+  function isMobile() { return window.innerWidth <= 768; }
+
+  sidebar.addEventListener('touchstart', (e) => {
+    if (!isMobile()) return;
+    startY = e.touches[0].clientY;
+    dragging = true;
+    sidebar.style.transition = 'none';
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(sidebar).transform);
+    currentTranslate = matrix.m42;
+  }, { passive: true });
+
+  sidebar.addEventListener('touchmove', (e) => {
+    if (!isMobile() || !dragging) return;
+    const deltaY = e.touches[0].clientY - startY;
+    const newTranslate = currentTranslate + deltaY;
+    const maxOpen = 0;
+    const maxClosed = sidebar.offsetHeight - 50;
+    const clamped = Math.max(maxOpen, Math.min(maxClosed, newTranslate));
+    sidebar.style.transform = `translateY(${clamped}px)`;
+  }, { passive: true });
+
+  sidebar.addEventListener('touchend', (e) => {
+    if (!isMobile() || !dragging) return;
+    dragging = false;
+    sidebar.style.transition = 'transform 0.3s ease';
+
+    const endY = e.changedTouches[0].clientY;
+    const deltaY = endY - startY;
+
+    sidebar.classList.remove('drawer-open', 'drawer-half', 'drawer-closed');
+
+    if (Math.abs(deltaY) > 100) {
+      if (deltaY > 0) {
+        sidebar.classList.add('drawer-closed');
+      } else {
+        sidebar.classList.add('drawer-open');
+      }
+    } else if (Math.abs(deltaY) > 30) {
+      sidebar.classList.add('drawer-half');
+    } else {
+      sidebar.classList.add('drawer-half');
+    }
+  });
 }
 
 // 页面加载完成后初始化

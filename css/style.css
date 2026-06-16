@@ -1130,3 +1130,137 @@ mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; 
 }
 .nav-mode-btn.active { border-color: #1565c0; background: #e3f2fd; }
 .nav-stop-btn { padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+/* ============================================
+   手机端适配（≤768px）— 抽屉面板 M1
+   ============================================ */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+    position: relative;
+  }
+
+  #map-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    height: 100% !important;
+    z-index: 1;
+  }
+
+  .sidebar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    width: 100% !important;
+    min-width: unset !important;
+    max-height: 60vh;
+    height: auto;
+    z-index: 20;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    background: #f5f6f8;
+  }
+
+  .sidebar::before {
+    content: "";
+    display: block;
+    width: 40px; height: 4px;
+    background: #ccc;
+    border-radius: 2px;
+    margin: 10px auto 6px;
+    flex-shrink: 0;
+  }
+
+  .sidebar.drawer-half {
+    transform: translateY(calc(100% - 210px));
+  }
+
+  .sidebar.drawer-open {
+    transform: translateY(0);
+    max-height: 70vh;
+  }
+
+  .sidebar.drawer-closed {
+    transform: translateY(calc(100% - 50px));
+  }
+
+  .sidebar .search-box {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f5f6f8;
+    padding: 8px 16px;
+  }
+
+  #detail-panel {
+    position: relative;
+    max-height: 50vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    margin: 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .map-controls-right { bottom: 220px; right: 10px; }
+  .map-legend { bottom: 220px; left: 10px; font-size: 11px; }
+  #nav-card { bottom: 80px; min-width: 280px; }
+
+  /* 手机端导航时隐藏搜索栏（N5） */
+  .sidebar.nav-active .search-box,
+  .sidebar.nav-active .category-tabs,
+  .sidebar.nav-active .events-strip { display: none; }
+  .sidebar.nav-active { transform: translateY(calc(100% - 50px)); }
+}
+
+/* ============================================
+   帮助按钮（M3 — 仅手机端）
+   ============================================ */
+.help-btn {
+  display: none;
+}
+@media (max-width: 768px) {
+  .help-btn {
+    display: flex;
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid #e0e0e0;
+    font-size: 18px;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+}
+
+.help-overlay {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  align-items: center; justify-content: center;
+}
+.help-overlay.show { display: flex; }
+
+.help-dialog {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  width: 85vw;
+  max-width: 340px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+}
+.help-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #333; }
+.help-body { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.help-item { font-size: 13px; color: #555; line-height: 1.6; }
+.help-close {
+  width: 100%; padding: 12px; background: #1565c0; color: white;
+  border: none; border-radius: 12px; font-size: 15px; cursor: pointer;
+}
