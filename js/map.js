@@ -239,6 +239,7 @@ function addUserMarker(pos) {
   userMarker.on('dragend', () => {
     const p = userMarker.getPosition();
     currentPosition = [p.lng, p.lat];
+    if (userCircle) userCircle.setCenter(p);
     showToast('📍 位置已更新，可拖拽蓝点继续微调');
   });
 
@@ -257,7 +258,6 @@ function addUserMarker(pos) {
   userCircle.setMap(map);
 
   userMarker.on('dragging', () => { userCircle.setCenter(userMarker.getPosition()); });
-  userMarker.on('dragend', () => { userCircle.setCenter(userMarker.getPosition()); });
 }
 
 // ──────────────────────────────────
@@ -807,8 +807,8 @@ function updateNavCardData(mode, fromName, toName, result) {
   if (driveBtn) driveBtn.classList.toggle('active', mode === 'driving');
   if (rideBtn) rideBtn.classList.toggle('active', mode === 'riding');
 
-  // 路线方案切换
-  if (altBar && lastRouteAlts.length > 1) {
+  // 路线方案切换（仅驾车模式支持多方案）
+  if (altBar && mode === 'driving' && lastRouteAlts.length > 1) {
     altBar.innerHTML = lastRouteAlts.map((rt, i) => {
       const d = (rt.distance / 1000).toFixed(1);
       const t = Math.round(rt.time / 60);
@@ -843,29 +843,24 @@ function hideNavCard() {
   }
 }
 
-// 切换路线方案
+// 切换路线方案（仅驾车模式）
 function switchRoute(idx) {
-  if (!routeStart || !routeEnd || !lastRouteAlts[idx]) return;
+  if (!routeStart || !routeEnd || navMode !== 'driving' || !lastRouteAlts[idx]) return;
   lastRouteIdx = idx;
   clearRoutes();
-  // 用当前模式重新规划（driving 用不同策略）
-  if (navMode === 'driving' && idx < 3) {
-    const policies = [0, 2, 1]; // 最快/最短/少收费
-    AMap.plugin('AMap.Driving', () => {
-      const driving = new AMap.Driving({ map, policy: policies[idx] });
-      driving.search([routeStart.lng, routeStart.lat], [routeEnd.lng, routeEnd.lat], (status, result) => {
-        if (status === 'complete') {
-          drivingRoute = driving;
-          walkingRoute = null;
-          ridingRoute = null;
-          lastRouteAlts = result.routes || [];
-          updateNavCardData('driving', routeStart.name, routeEnd.name, result);
-        }
-      });
+  const policies = [0, 2, 1]; // 最快/最短/少收费
+  AMap.plugin('AMap.Driving', () => {
+    const driving = new AMap.Driving({ map, policy: policies[idx] || 0 });
+    driving.search([routeStart.lng, routeStart.lat], [routeEnd.lng, routeEnd.lat], (status, result) => {
+      if (status === 'complete') {
+        drivingRoute = driving;
+        walkingRoute = null;
+        ridingRoute = null;
+        lastRouteAlts = result.routes || [];
+        updateNavCardData('driving', routeStart.name, routeEnd.name, result);
+      }
     });
-  } else {
-    planRoute(navMode);
-  }
+  });
 }
 
 // ──────────────────────────────────

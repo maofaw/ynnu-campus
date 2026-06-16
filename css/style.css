@@ -1295,6 +1295,10 @@ mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; 
 
   /* ── Toast ── */
   .route-toast, .toast-error { top: 110px; bottom: auto; }
+
+  /* ── 建筑照片（手机端横向滚动） ── */
+  .detail-images { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
+  .detail-image { width: 200px; height: 140px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
 }
 
 /* ============================================
@@ -1337,8 +1341,6 @@ mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; 
 /* ============================================
    建筑照片 + 活动日历
    ============================================ */
-.detail-images { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
-.detail-image { width: 200px; height: 140px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
 .detail-no-photo {
   text-align: center; padding: 24px 0; color: #999;
   background: #f5f6f8; border-radius: 12px; margin: 8px 0;
