@@ -115,6 +115,13 @@ function bindControls() {
         helpOverlay.classList.remove('show');
       });
     }
+    const helpGotIt = document.getElementById('help-got-it');
+    if (helpGotIt) {
+      helpGotIt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        helpOverlay.classList.remove('show');
+      });
+    }
     helpOverlay.addEventListener('click', () => {
       helpOverlay.classList.remove('show');
     });
@@ -123,14 +130,9 @@ function bindControls() {
   // 3D 视图切换
   init3DView();
 
-  // 手机端抽屉触摸拖拽（M2）
-  initDrawerDrag();
-
-  // 抽屉初始半开
-  if (window.innerWidth <= 768) {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) { sidebar.classList.add('drawer-half'); }
-  }
+  // 手机端 UI 初始化
+  initMobileListPanel();
+  initMobileCtrlMenu();
 }
 
 // 切换图层
@@ -637,6 +639,13 @@ function planRoute(mode) {
     detailPanel.classList.remove('detail-visible');
     detailPanel.classList.add('detail-hidden');
   }
+  // 手机端关闭建筑列表面板
+  const listPanel = document.getElementById('mobile-list-panel');
+  const listOverlay = document.getElementById('mobile-list-overlay');
+  const listBtn = document.getElementById('mobile-list-btn');
+  if (listPanel) listPanel.classList.remove('open');
+  if (listOverlay) listOverlay.classList.remove('show');
+  if (listBtn) listBtn.classList.remove('hidden');
 
   // 隐藏非起终点标注，自动聚焦起点（N1）
   hideMarkersExcept(routeStart, routeEnd);
@@ -815,9 +824,14 @@ function updateNavCardData(mode, fromName, toName, result) {
 function showNavCard(mode, fromName, toName, result) {
   updateNavCardData(mode, fromName, toName, result);
   const card = document.getElementById('nav-card');
-  if (card) {
-    card.classList.remove('nav-card-hidden');
-    card.classList.add('nav-card-visible');
+  if (!card) return;
+  card.classList.remove('nav-card-hidden');
+  card.classList.add('nav-card-visible');
+  // 手机端默认折叠
+  if (window.innerWidth <= 768) {
+    card.classList.add('collapsed');
+    const expand = () => { card.classList.remove('collapsed'); card.removeEventListener('click', expand); };
+    card.addEventListener('click', expand);
   }
 }
 
@@ -914,59 +928,118 @@ function init3DView() {
 }
 
 // ──────────────────────────────────
-// 手机端抽屉触摸拖拽（M2）
+// 手机端：建筑列表半屏面板
 // ──────────────────────────────────
-function initDrawerDrag() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) return;
+function initMobileListPanel() {
+  const btn = document.getElementById('mobile-list-btn');
+  const panel = document.getElementById('mobile-list-panel');
+  const overlay = document.getElementById('mobile-list-overlay');
+  if (!btn || !panel) return;
 
-  let startY = 0;
-  let currentTranslate = 0;
-  let dragging = false;
-
-  function isMobile() { return window.innerWidth <= 768; }
-
-  sidebar.addEventListener('touchstart', (e) => {
-    if (!isMobile()) return;
-    startY = e.touches[0].clientY;
-    dragging = true;
-    sidebar.style.transition = 'none';
-    const matrix = new DOMMatrixReadOnly(getComputedStyle(sidebar).transform);
-    currentTranslate = matrix.m42;
-  }, { passive: true });
-
-  sidebar.addEventListener('touchmove', (e) => {
-    if (!isMobile() || !dragging) return;
-    const deltaY = e.touches[0].clientY - startY;
-    const newTranslate = currentTranslate + deltaY;
-    const maxOpen = 0;
-    const maxClosed = sidebar.offsetHeight - 50;
-    const clamped = Math.max(maxOpen, Math.min(maxClosed, newTranslate));
-    sidebar.style.transform = `translateY(${clamped}px)`;
-  }, { passive: true });
-
-  sidebar.addEventListener('touchend', (e) => {
-    if (!isMobile() || !dragging) return;
-    dragging = false;
-    sidebar.style.transition = 'transform 0.3s ease';
-
-    const endY = e.changedTouches[0].clientY;
-    const deltaY = endY - startY;
-
-    sidebar.classList.remove('drawer-open', 'drawer-half', 'drawer-closed');
-
-    if (Math.abs(deltaY) > 100) {
-      if (deltaY > 0) {
-        sidebar.classList.add('drawer-closed');
-      } else {
-        sidebar.classList.add('drawer-open');
-      }
-    } else if (Math.abs(deltaY) > 30) {
-      sidebar.classList.add('drawer-half');
-    } else {
-      sidebar.classList.add('drawer-half');
+  function fillPanel() {
+    const inner = document.getElementById('mobile-list-inner');
+    if (!inner) return;
+    // 学校简介
+    const buildingCount = (typeof allBuildings !== 'undefined') ? allBuildings.length : 38;
+    let html = `<div class="intro-section" style="padding:0;background:transparent;">
+      <div class="intro-header">
+        <span class="intro-icon">🎓</span>
+        <div><h2>云南师范大学（呈贡校区）</h2><p>智慧校园导览系统</p></div>
+      </div>
+      <div class="intro-stats" style="display:flex;gap:12px;padding:8px 0;">
+        <div class="stat-item"><div class="stat-num">${buildingCount}</div><div class="stat-label">栋建筑</div></div>
+        <div class="stat-item"><div class="stat-num">8</div><div class="stat-label">种分类</div></div>
+        <div class="stat-item"><div class="stat-num">375万+</div><div class="stat-label">图书馆藏书</div></div>
+      </div>
+    </div>`;
+    // 建筑卡片 — 复用 renderBuildingCards 逻辑
+    const container = document.getElementById('cards-container');
+    if (container) {
+      html += `<div class="cards-container-mobile">${container.innerHTML}</div>`;
     }
+    inner.innerHTML = html;
+
+    // 卡片点击事件：关闭面板
+    inner.querySelectorAll('.building-card').forEach(card => {
+      card.addEventListener('click', () => {
+        closePanel();
+      });
+    });
+  }
+
+  function openPanel() {
+    fillPanel();
+    panel.classList.add('open');
+    overlay.classList.add('show');
+    btn.classList.add('hidden');
+  }
+
+  function closePanel() {
+    panel.classList.remove('open');
+    overlay.classList.remove('show');
+    btn.classList.remove('hidden');
+  }
+
+  btn.addEventListener('click', openPanel);
+  overlay.addEventListener('click', closePanel);
+
+  // 下拖关闭
+  let touchStartY = 0;
+  panel.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  panel.addEventListener('touchmove', (e) => {
+    if (e.touches[0].clientY - touchStartY > 60) closePanel();
+  }, { passive: true });
+}
+
+// ──────────────────────────────────
+// 手机端：地图控件折叠菜单
+// ──────────────────────────────────
+function initMobileCtrlMenu() {
+  const toggle = document.getElementById('mobile-ctrl-toggle');
+  const dropdown = document.getElementById('mobile-ctrl-dropdown');
+  if (!toggle || !dropdown) return;
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
   });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.mobile-ctrl-menu')) dropdown.classList.remove('open');
+  });
+
+  // 3D 按钮
+  const btn3d = document.getElementById('mobile-3d-btn');
+  if (btn3d) {
+    btn3d.addEventListener('click', () => {
+      if (typeof is3D === 'undefined') return;
+      is3D = !is3D;
+      map.setPitch(is3D ? 60 : 0);
+      map.setRotation(is3D ? 30 : 0);
+      dropdown.classList.remove('open');
+    });
+  }
+
+  // 帮助按钮
+  const btnHelp = document.getElementById('mobile-help-btn');
+  if (btnHelp) {
+    btnHelp.addEventListener('click', () => {
+      document.getElementById('help-overlay').classList.add('show');
+      dropdown.classList.remove('open');
+    });
+  }
+
+  // 图例按钮
+  const btnLegend = document.getElementById('mobile-legend-btn');
+  if (btnLegend) {
+    btnLegend.addEventListener('click', () => {
+      const legend = document.getElementById('map-legend');
+      if (legend) legend.classList.toggle('show-mobile');
+      dropdown.classList.remove('open');
+    });
+  }
 }
 
 // 页面加载完成后初始化

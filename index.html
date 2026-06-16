@@ -130,9 +130,33 @@
         <div class="help-item">🌤️ <b>天气查看</b><br>侧边栏显示实时天气</div>
         <div class="help-item">📅 <b>校园活动</b><br>查看近期活动日历</div>
       </div>
-      <button class="help-close" id="help-close">✕ 关闭</button>
+      <button class="help-got-it" id="help-got-it">我已知晓</button>
+      <button class="help-close" id="help-close">✕</button>
     </div>
   </div>
+
+  <!-- 手机端：建筑列表浮动按钮 + 半屏面板 -->
+  <button id="mobile-list-btn" class="mobile-list-btn">🏠 建筑</button>
+  <div id="mobile-list-panel" class="mobile-list-panel">
+    <div class="mobile-list-handle"></div>
+    <div class="mobile-list-inner" id="mobile-list-inner"></div>
+  </div>
+  <div id="mobile-list-overlay" class="mobile-list-overlay"></div>
+
+  <!-- 手机端：地图控件折叠菜单 -->
+  <div id="mobile-ctrl-menu" class="mobile-ctrl-menu">
+    <button id="mobile-ctrl-toggle" class="mobile-ctrl-toggle">⋮</button>
+    <div id="mobile-ctrl-dropdown" class="mobile-ctrl-dropdown">
+      <button onclick="switchLayer('normal')">🗺️ 矢量</button>
+      <button onclick="switchLayer('satellite')">🛰️ 卫星</button>
+      <button id="mobile-3d-btn">🏙️ 3D</button>
+      <button id="mobile-help-btn">❓ 帮助</button>
+      <button id="mobile-legend-btn">📌 图例</button>
+    </div>
+  </div>
+
+  <!-- 手机端：底部活动横条 -->
+  <div id="mobile-events-bar" class="mobile-events-bar hidden"></div>
 
   <!-- 高德地图 JS API -->
   <script>

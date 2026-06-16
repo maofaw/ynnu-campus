@@ -22,6 +22,25 @@ function renderEventsView(events) {
   if (toggleBtn) {
     toggleBtn.textContent = calendarView === 'calendar' ? '📋 列表' : '📅 日历';
   }
+
+  // 手机端底部活动横条
+  renderMobileEventsBar(events);
+}
+
+// ── 手机端活动横条 ──
+function renderMobileEventsBar(events) {
+  const bar = document.getElementById('mobile-events-bar');
+  if (!bar) return;
+  if (!events || events.length === 0) {
+    bar.classList.add('hidden');
+    return;
+  }
+  bar.classList.remove('hidden');
+  bar.innerHTML = events.slice(0, 5).map(e => {
+    const date = new Date(e.startTime);
+    const dateStr = `${date.getMonth()+1}/${date.getDate()}`;
+    return `<span class="mobile-event-chip" onclick="jumpToEvent('${e.id}')">${e.title} · ${dateStr}</span>`;
+  }).join('') + `<button class="mobile-events-cal-btn" onclick="toggleCalendarView()" title="日历">📅</button>`;
 }
 
 // ── 列表视图 ──
