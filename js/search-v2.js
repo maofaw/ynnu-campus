@@ -102,73 +102,81 @@ function levenshteinMatch(query, target, maxDist) {
 }
 
 /**
- * 判断建筑是否匹配关键词
+ * 建筑匹配打分（0 = 不匹配，越高越相关）
+ *  100: 名称包含关键词
+ *   50: 子序列模糊匹配
+ *   30: 编辑距离容错（1个错别字）
  */
-function matchesBuilding(b, kw, kwLower, isPinyin) {
+function scoreBuilding(b, kw, kwLower, isPinyin) {
   const name = b.name;
+  const nameLower = name.toLowerCase();
 
   if (isPinyin) {
-    // 拼音全拼匹配
-    if (toPinyin(name).includes(kwLower)) return true;
-    // 拼音首字母匹配
-    if (toPinyinInitials(name).includes(kwLower)) return true;
-    return false;
+    const pyFull = toPinyin(name);
+    const pyInit = toPinyinInitials(name);
+    // 拼音全拼精确包含（最高精度）
+    if (pyFull.includes(kwLower)) return 100;
+    // 拼音首字母精确包含
+    if (pyInit.includes(kwLower)) return 100;
+    // 拼音全拼子序列
+    if (kwLower.length >= 2 && fuzzySequenceMatch(kwLower, pyFull)) return 50;
+    // 拼音首字母子序列
+    if (kwLower.length >= 2 && fuzzySequenceMatch(kwLower, pyInit)) return 50;
+    return 0;
   }
 
   // 中文搜索 — 只匹配建筑名字
-  // 1. 精确子串匹配
-  if (name.toLowerCase().includes(kwLower)) return true;
+  // 1. 精确子串包含（最高优先级）
+  if (nameLower.includes(kwLower)) return 100;
 
-  // 2. 子序列匹配（容忍少字/多字）
-  if (kw.length >= 2) {
-    if (fuzzySequenceMatch(kw, name)) return true;
-  }
+  // 2. 子序列匹配（容忍少字/多字，如"汇文"匹配"汇文楼3区"）
+  if (kw.length >= 2 && fuzzySequenceMatch(kw, name)) return 50;
 
-  // 3. 编辑距离容错（1 个错别字）
-  if (kw.length >= 2 && kw.length <= 6) {
-    if (levenshteinMatch(kw, name, 1)) return true;
-  }
+  // 3. 编辑距离容错（1个错别字，如"图收馆"→"图书馆"）
+  if (kw.length >= 2 && kw.length <= 6 && levenshteinMatch(kw, name, 1)) return 30;
 
-  return false;
+  return 0;
 }
 
 /**
- * 判断活动是否匹配关键词
+ * 活动匹配打分（0 = 不匹配）
  */
-function matchesEvent(e, kw, kwLower, isPinyin) {
+function scoreEvent(e, kw, kwLower, isPinyin) {
   const title = e.title;
   const org = e.organizer || "";
   const etags = (e.tags || []).join(" ");
 
   if (isPinyin) {
-    if (toPinyin(title).includes(kwLower)) return true;
-    if (toPinyinInitials(title).includes(kwLower)) return true;
-    if (toPinyin(org).includes(kwLower)) return true;
+    if (toPinyin(title).includes(kwLower)) return 100;
+    if (toPinyinInitials(title).includes(kwLower)) return 100;
+    if (toPinyin(org).includes(kwLower)) return 60;
     for (const t of (e.tags || [])) {
-      if (toPinyin(t).includes(kwLower)) return true;
-      if (toPinyinInitials(t).includes(kwLower)) return true;
+      if (toPinyin(t).includes(kwLower)) return 60;
+      if (toPinyinInitials(t).includes(kwLower)) return 60;
     }
-    return false;
+    return 0;
   }
 
-  if (title.toLowerCase().includes(kwLower)) return true;
-  if (org.toLowerCase().includes(kwLower)) return true;
-  if (etags.toLowerCase().includes(kwLower)) return true;
+  if (title.toLowerCase().includes(kwLower)) return 100;
+  if (org.toLowerCase().includes(kwLower)) return 60;
+  if (etags.toLowerCase().includes(kwLower)) return 60;
 
   if (kw.length >= 2) {
-    if (fuzzySequenceMatch(kw, title)) return true;
-    if (fuzzySequenceMatch(kw, etags)) return true;
+    if (fuzzySequenceMatch(kw, title)) return 50;
+    if (fuzzySequenceMatch(kw, etags)) return 25;
   }
   if (kw.length >= 2 && kw.length <= 6) {
-    if (levenshteinMatch(kw, title, 1)) return true;
+    if (levenshteinMatch(kw, title, 1)) return 30;
   }
 
-  return false;
+  return 0;
 }
 
 /**
- * 核心搜索：返回 { buildings, events }
+ * 核心搜索：返回 { buildings, events }，按相关度排序
  */
+const MIN_SCORE = 50; // 最低匹配分数阈值
+
 function performSearch(keyword) {
   const results = { buildings: [], events: [] };
   if (!keyword || keyword.length === 0) return results;
@@ -178,23 +186,31 @@ function performSearch(keyword) {
   const isPinyin = isPinyinQuery(kwLower);
 
   if (typeof allBuildings !== "undefined") {
+    const scored = [];
     for (const b of allBuildings) {
-      if (matchesBuilding(b, kw, kwLower, isPinyin)) {
-        results.buildings.push(b);
+      const score = scoreBuilding(b, kw, kwLower, isPinyin);
+      if (score >= MIN_SCORE) {
+        scored.push({ building: b, score });
       }
     }
-    // 自然排序（汇学楼1区 < 汇学楼2区 < 汇学楼3区）
-    results.buildings.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN', { numeric: true }));
-    results.buildings = results.buildings.slice(0, 8);
+    // 按分数降序，同分按名称自然排序
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.building.name.localeCompare(b.building.name, 'zh-CN', { numeric: true });
+    });
+    results.buildings = scored.slice(0, 8).map(s => s.building);
   }
 
   if (typeof allEvents !== "undefined") {
+    const scored = [];
     for (const e of allEvents) {
-      if (matchesEvent(e, kw, kwLower, isPinyin)) {
-        results.events.push(e);
+      const score = scoreEvent(e, kw, kwLower, isPinyin);
+      if (score >= MIN_SCORE) {
+        scored.push({ event: e, score });
       }
     }
-    results.events = results.events.slice(0, 3);
+    scored.sort((a, b) => b.score - a.score);
+    results.events = scored.slice(0, 3).map(s => s.event);
   }
 
   return results;
