@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ============================================
 
 function selectBuilding(id) {
-  const building = allBuildings.find((b) => b.id === id || b._id === id);
+  const building = allBuildings.find((b) => b.id === id);
   if (!building) return;
 
   map.setZoomAndCenter(18, [building.lng, building.lat]);
