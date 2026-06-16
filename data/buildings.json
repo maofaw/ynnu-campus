@@ -20,7 +20,9 @@
     "description": "云南师范大学呈贡校区内",
     "lng": 102.850573,
     "lat": 24.861548,
-    "images": [],
+    "images": [
+      "/public/images/buildings/经济与管理学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -34,7 +36,9 @@
     "description": "呈贡大学城",
     "lng": 102.850573,
     "lat": 24.861554,
-    "images": [],
+    "images": [
+      "/public/images/buildings/哲学与政法学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -48,7 +52,9 @@
     "description": "梨花中路云南师范大学(呈贡校区)",
     "lng": 102.850578,
     "lat": 24.861557,
-    "images": [],
+    "images": [
+      "/public/images/buildings/纪检与监察学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -134,7 +140,9 @@
     "description": "聚贤街768号云南师范大学(呈贡校区)",
     "lng": 102.851925,
     "lat": 24.861625,
-    "images": [],
+    "images": [
+      "/public/images/buildings/外国语学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -176,7 +184,9 @@
     "description": "片区1号云南师范大学呈贡校区西区4栋传媒学院附近",
     "lng": 102.85067,
     "lat": 24.862714,
-    "images": [],
+    "images": [
+      "/public/images/buildings/传媒学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -190,7 +200,9 @@
     "description": "聚贤街768号云南师范大学(呈贡校区)",
     "lng": 102.850713,
     "lat": 24.862758,
-    "images": [],
+    "images": [
+      "/public/images/buildings/文学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -204,7 +216,9 @@
     "description": "聚贤街768号云南师范大学(呈贡校区)",
     "lng": 102.850748,
     "lat": 24.862997,
-    "images": [],
+    "images": [
+      "/public/images/buildings/历史学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -261,7 +275,9 @@
     "description": "聚贤街768号附1号",
     "lng": 102.853885,
     "lat": 24.858814,
-    "images": [],
+    "images": [
+      "/public/images/buildings/行政楼.jpg"
+    ],
     "tags": [
       "行政"
     ],
@@ -275,7 +291,9 @@
     "description": "明德楼4号楼",
     "lng": 102.850979,
     "lat": 24.863753,
-    "images": [],
+    "images": [
+      "/public/images/buildings/马克思主义学院.jpg"
+    ],
     "tags": [
       "高等院校"
     ],
@@ -289,7 +307,9 @@
     "description": "聚贤街768号云南师范大学呈贡校区内",
     "lng": 102.851132,
     "lat": 24.859364,
-    "images": [],
+    "images": [
+      "/public/images/buildings/游泳馆.jpg"
+    ],
     "tags": [
       "游泳馆"
     ],
@@ -331,7 +351,9 @@
     "description": "启园北路",
     "lng": 102.846283,
     "lat": 24.857632,
-    "images": [],
+    "images": [
+      "/public/images/buildings/西区体育场.jpg"
+    ],
     "tags": [
       "综合体育馆"
     ],
@@ -359,7 +381,9 @@
     "description": "启园宿舍区",
     "lng": 102.848208,
     "lat": 24.862544,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍9.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -373,7 +397,9 @@
     "description": "春耘路与梨花中路交叉口北220米",
     "lng": 102.846715,
     "lat": 24.861552,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍5.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -387,7 +413,9 @@
     "description": "联大街与景明南路交叉口西南160米",
     "lng": 102.84774,
     "lat": 24.862724,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍10.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -415,7 +443,9 @@
     "description": "春耘路与梨花中路交叉口西北180米",
     "lng": 102.845813,
     "lat": 24.861004,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍4.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -429,7 +459,9 @@
     "description": "聚贤街768号",
     "lng": 102.845155,
     "lat": 24.860422,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍3.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -443,7 +475,9 @@
     "description": "启园北路与梨花中路交叉口北200米",
     "lng": 102.844905,
     "lat": 24.861053,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍2.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -457,7 +491,9 @@
     "description": "联大街与春融东路交叉口东160米",
     "lng": 102.844692,
     "lat": 24.8618,
-    "images": [],
+    "images": [
+      "/public/images/buildings/学生宿舍1.jpg"
+    ],
     "tags": [
       "宿舍"
     ],
@@ -486,7 +522,9 @@
     "description": "聚贤街768号云南师范大学呈贡校区，馆藏丰富，设有自习室",
     "lng": 102.854184,
     "lat": 24.861987,
-    "images": [],
+    "images": [
+      "/public/images/buildings/图书馆.jpg"
+    ],
     "tags": [
       "图书馆",
       "自习"
@@ -501,7 +539,9 @@
     "description": "春耘路，校内地标广场，日常活动和集会场所",
     "lng": 102.848506,
     "lat": 24.860144,
-    "images": [],
+    "images": [
+      "/public/images/buildings/红烛广场.jpg"
+    ],
     "tags": [
       "广场",
       "地标"
@@ -516,7 +556,9 @@
     "description": "吴家营街道聚贤街1058号，西区启园一楼，人均¥14",
     "lng": 102.845743,
     "lat": 24.861917,
-    "images": [],
+    "images": [
+      "/public/images/buildings/启园食堂.jpg"
+    ],
     "tags": [
       "食堂",
       "西区"
@@ -531,7 +573,9 @@
     "description": "聚贤街与致远路交叉口北320米，东区，人均¥17",
     "lng": 102.859547,
     "lat": 24.862517,
-    "images": [],
+    "images": [
+      "/public/images/buildings/和园食堂.jpg"
+    ],
     "tags": [
       "食堂",
       "东区"
