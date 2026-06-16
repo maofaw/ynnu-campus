@@ -21,7 +21,7 @@
     "lng": 102.850573,
     "lat": 24.861548,
     "images": [
-      "/public/images/buildings/经济与管理学院.jpg"
+      "public/images/buildings/经济与管理学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -37,7 +37,7 @@
     "lng": 102.850573,
     "lat": 24.861554,
     "images": [
-      "/public/images/buildings/哲学与政法学院.jpg"
+      "public/images/buildings/哲学与政法学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -53,7 +53,7 @@
     "lng": 102.850578,
     "lat": 24.861557,
     "images": [
-      "/public/images/buildings/纪检与监察学院.jpg"
+      "public/images/buildings/纪检与监察学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -141,7 +141,7 @@
     "lng": 102.851925,
     "lat": 24.861625,
     "images": [
-      "/public/images/buildings/外国语学院.jpg"
+      "public/images/buildings/外国语学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -185,7 +185,7 @@
     "lng": 102.85067,
     "lat": 24.862714,
     "images": [
-      "/public/images/buildings/传媒学院.jpg"
+      "public/images/buildings/传媒学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -201,7 +201,7 @@
     "lng": 102.850713,
     "lat": 24.862758,
     "images": [
-      "/public/images/buildings/文学院.jpg"
+      "public/images/buildings/文学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -217,7 +217,7 @@
     "lng": 102.850748,
     "lat": 24.862997,
     "images": [
-      "/public/images/buildings/历史学院.jpg"
+      "public/images/buildings/历史学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -276,7 +276,7 @@
     "lng": 102.853885,
     "lat": 24.858814,
     "images": [
-      "/public/images/buildings/行政楼.jpg"
+      "public/images/buildings/行政楼.jpg"
     ],
     "tags": [
       "行政"
@@ -292,7 +292,7 @@
     "lng": 102.850979,
     "lat": 24.863753,
     "images": [
-      "/public/images/buildings/马克思主义学院.jpg"
+      "public/images/buildings/马克思主义学院.jpg"
     ],
     "tags": [
       "高等院校"
@@ -308,7 +308,7 @@
     "lng": 102.851132,
     "lat": 24.859364,
     "images": [
-      "/public/images/buildings/游泳馆.jpg"
+      "public/images/buildings/游泳馆.jpg"
     ],
     "tags": [
       "游泳馆"
@@ -352,7 +352,7 @@
     "lng": 102.846283,
     "lat": 24.857632,
     "images": [
-      "/public/images/buildings/西区体育场.jpg"
+      "public/images/buildings/西区体育场.jpg"
     ],
     "tags": [
       "综合体育馆"
@@ -382,7 +382,7 @@
     "lng": 102.848208,
     "lat": 24.862544,
     "images": [
-      "/public/images/buildings/学生宿舍9.jpg"
+      "public/images/buildings/学生宿舍9.jpg"
     ],
     "tags": [
       "宿舍"
@@ -398,7 +398,7 @@
     "lng": 102.846715,
     "lat": 24.861552,
     "images": [
-      "/public/images/buildings/学生宿舍5.jpg"
+      "public/images/buildings/学生宿舍5.jpg"
     ],
     "tags": [
       "宿舍"
@@ -414,7 +414,7 @@
     "lng": 102.84774,
     "lat": 24.862724,
     "images": [
-      "/public/images/buildings/学生宿舍10.jpg"
+      "public/images/buildings/学生宿舍10.jpg"
     ],
     "tags": [
       "宿舍"
@@ -444,7 +444,7 @@
     "lng": 102.845813,
     "lat": 24.861004,
     "images": [
-      "/public/images/buildings/学生宿舍4.jpg"
+      "public/images/buildings/学生宿舍4.jpg"
     ],
     "tags": [
       "宿舍"
@@ -460,7 +460,7 @@
     "lng": 102.845155,
     "lat": 24.860422,
     "images": [
-      "/public/images/buildings/学生宿舍3.jpg"
+      "public/images/buildings/学生宿舍3.jpg"
     ],
     "tags": [
       "宿舍"
@@ -476,7 +476,7 @@
     "lng": 102.844905,
     "lat": 24.861053,
     "images": [
-      "/public/images/buildings/学生宿舍2.jpg"
+      "public/images/buildings/学生宿舍2.jpg"
     ],
     "tags": [
       "宿舍"
@@ -492,7 +492,7 @@
     "lng": 102.844692,
     "lat": 24.8618,
     "images": [
-      "/public/images/buildings/学生宿舍1.jpg"
+      "public/images/buildings/学生宿舍1.jpg"
     ],
     "tags": [
       "宿舍"
@@ -591,7 +591,7 @@
     "lng": 102.854184,
     "lat": 24.861987,
     "images": [
-      "/public/images/buildings/图书馆.jpg"
+      "public/images/buildings/图书馆.jpg"
     ],
     "tags": [
       "图书馆",
@@ -608,7 +608,7 @@
     "lng": 102.848506,
     "lat": 24.860144,
     "images": [
-      "/public/images/buildings/红烛广场.jpg"
+      "public/images/buildings/红烛广场.jpg"
     ],
     "tags": [
       "广场",
@@ -625,7 +625,7 @@
     "lng": 102.845743,
     "lat": 24.861917,
     "images": [
-      "/public/images/buildings/启园食堂.jpg"
+      "public/images/buildings/启园食堂.jpg"
     ],
     "tags": [
       "食堂",
@@ -780,7 +780,7 @@
     "lng": 102.859547,
     "lat": 24.862517,
     "images": [
-      "/public/images/buildings/和园食堂.jpg"
+      "public/images/buildings/和园食堂.jpg"
     ],
     "tags": [
       "食堂",
@@ -946,7 +946,7 @@
     "lng": 102.85397,
     "lat": 24.86305,
     "images": [
-      "/public/images/buildings/校史馆.jpg"
+      "public/images/buildings/校史馆.jpg"
     ],
     "tags": [
       "行政楼"
@@ -962,7 +962,7 @@
     "lng": 102.854583,
     "lat": 24.864537,
     "images": [
-      "/public/images/buildings/艺术学院.jpg"
+      "public/images/buildings/艺术学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -978,7 +978,7 @@
     "lng": 102.855388,
     "lat": 24.864926,
     "images": [
-      "/public/images/buildings/体育学院.jpg"
+      "public/images/buildings/体育学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -994,7 +994,7 @@
     "lng": 102.856139,
     "lat": 24.86496,
     "images": [
-      "/public/images/buildings/华文学院.jpg"
+      "public/images/buildings/华文学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1010,7 +1010,7 @@
     "lng": 102.854782,
     "lat": 24.863943,
     "images": [
-      "/public/images/buildings/地理学部.jpg"
+      "public/images/buildings/地理学部.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1026,7 +1026,7 @@
     "lng": 102.855855,
     "lat": 24.863914,
     "images": [
-      "/public/images/buildings/信息学院.jpg"
+      "public/images/buildings/信息学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1042,7 +1042,7 @@
     "lng": 102.855898,
     "lat": 24.862853,
     "images": [
-      "/public/images/buildings/物电学院.jpg"
+      "public/images/buildings/物电学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1058,7 +1058,7 @@
     "lng": 102.848856,
     "lat": 24.859692,
     "images": [
-      "/public/images/buildings/西南联大纪念碑.jpg"
+      "public/images/buildings/西南联大纪念碑.jpg"
     ],
     "tags": [
       "地标广场"
@@ -1074,7 +1074,7 @@
     "lng": 102.846775,
     "lat": 24.859634,
     "images": [
-      "/public/images/buildings/三校碑.jpg"
+      "public/images/buildings/三校碑.jpg"
     ],
     "tags": [
       "地标广场"
@@ -1132,7 +1132,7 @@
     "lng": 102.85637,
     "lat": 24.864283,
     "images": [
-      "/public/images/buildings/生科学院.jpg"
+      "public/images/buildings/生科学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1148,7 +1148,7 @@
     "lng": 102.856847,
     "lat": 24.863008,
     "images": [
-      "/public/images/buildings/化工学院.jpg"
+      "public/images/buildings/化工学院.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1192,7 +1192,7 @@
     "lng": 102.859083,
     "lat": 24.861125,
     "images": [
-      "/public/images/buildings/教育学部.jpg"
+      "public/images/buildings/教育学部.jpg"
     ],
     "tags": [
       "教学楼"
@@ -1208,7 +1208,7 @@
     "lng": 102.857828,
     "lat": 24.865522,
     "images": [
-      "/public/images/buildings/智慧餐厅.jpg"
+      "public/images/buildings/智慧餐厅.jpg"
     ],
     "tags": [
       "食堂"
@@ -1261,7 +1261,7 @@
     "lng": 102.858907,
     "lat": 24.865667,
     "images": [
-      "/public/images/buildings/东区体育馆.jpg"
+      "public/images/buildings/东区体育馆.jpg"
     ],
     "tags": [
       "体育场馆"
@@ -1277,7 +1277,7 @@
     "lng": 102.858692,
     "lat": 24.863803,
     "images": [
-      "/public/images/buildings/东区田径场.jpg"
+      "public/images/buildings/东区田径场.jpg"
     ],
     "tags": [
       "体育场馆"
@@ -1307,7 +1307,7 @@
     "lng": 102.860821,
     "lat": 24.862266,
     "images": [
-      "/public/images/buildings/贝壳广场.jpg"
+      "public/images/buildings/贝壳广场.jpg"
     ],
     "tags": [
       "地标广场"
