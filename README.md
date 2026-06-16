@@ -1,13 +1,39 @@
 # 云师大校园地图
 
-交互式校园地图 Web 应用，帮助师生和访客快速找到校园建筑。
+交互式智慧校园 GIS 导览平台，帮助师生和访客快速找到校园建筑、规划路线、了解活动。
+
+**线上地址**：https://maofaw.github.io/ynnu-campus/
 
 ## 功能
-- 🗺️ **交互地图**：缩放拖拽，建筑标注一目了然
-- 🔍 **智能搜索**：输入建筑名称，地图自动定位
-- 📋 **详情展示**：点击建筑查看介绍、照片、标签
-- 🍜 **食堂菜单**：每个食堂展示窗口和菜品价格
-- 🔧 **后台管理**：在线增删改建筑信息和菜单
+
+### 地图浏览
+- 🗺️ 矢量 / 🛰️ 卫星 / 🏙️ 3D 三种图层自由切换
+- 63 栋建筑精准标注，8 种分类颜色区分（教学楼/食堂/宿舍/体育/行政/图书馆/地标/其他）
+- 支持图例查看
+
+### 智能搜索
+- 🔍 汉字 + 拼音搜索（如输入 "jxl" 可搜到"教学楼"）
+- 分类筛选，实时更新地图标注
+
+### 路径导航
+- 🚶 步行 / 🚗 驾车 / 🚲 骑行 三种出行方式
+- 多路线方案展示与切换（驾车提供最快/最短/省钱 3 种策略）
+- ETA 预计到达时间
+- 导航信息卡（手机端可折叠）
+
+### 建筑详情
+- 📷 实拍照片（42 栋已有照片）
+- 🕐 开放时间、📞 电话、📋 简介
+- 📢 关联该建筑的校园活动
+
+### 校园生活
+- 🍴 食堂菜单（3 个食堂，含楼层、窗口、菜品、价格）
+- 📅 活动日历（列表/日历双视图，每 5 分钟轮询更新）
+- 🌤️ 实时天气
+
+### 多端适配
+- 🖥️ 桌面端：侧边栏 + 地图 经典布局
+- 📱 手机端：地图全屏 + 浮层 UI（顶部搜索、折叠菜单、半屏面板、底部活动条）
 
 ## 快速开始
 
@@ -16,70 +42,90 @@
 npm install
 ```
 
-### 2. 初始化管理员账号
-```bash
-node scripts/init-admin.js
-```
-默认账号 `admin`，密码 `admin123`。可传参自定义密码：
-```bash
-node scripts/init-admin.js 我的密码
-```
-
-### 3. 获取高德地图 Key
-- 访问 https://lbs.amap.com/ 注册开发者账号
-- 创建应用，获取 JS API Key（选择"Web端(JS API)"）
-- 在 `index.html` 中替换 `YOUR_AMAP_KEY` 为你的 Key
-
-### 4. 启动服务
+### 2. 启动服务
 ```bash
 node server.js
 ```
 
-### 5. 打开浏览器
-- 地图主页: http://localhost:3000
-- 后台管理: http://localhost:3000/admin.html
+### 3. 打开浏览器
+```
+http://localhost:3000
+```
+
+**无需配置高德 Key**，已内置在代码中。
 
 ## 技术栈
-- 前端：原生 HTML/CSS/JS + 高德地图 JS API 2.0
-- 后端：Node.js + Express
-- 存储：JSON 文件
-- 认证：express-session + bcryptjs
+
+- **前端**：原生 HTML/CSS/JS + 高德地图 JS API 2.0
+- **后端**：Node.js + Express
+- **存储**：JSON 文件
+- **部署**：GitHub Pages（自动构建）
+
+## 双模式架构
+
+平台启动时自动检测服务器是否可用：
+
+| 模式 | 触发条件 | 数据来源 |
+|------|---------|---------|
+| 服务器模式 | 本地 `localhost:3000` | Node.js API → `data/buildings.json` |
+| 静态模式 | GitHub Pages / 无服务器 | 内嵌数据 → `js/data.js` |
+
+一套代码，无需任何修改即可切换，保证平台始终可用。
 
 ## 项目结构
 
 ```
 ynnu-campus/
-├── index.html           # 地图主页
-├── admin.html           # 后台管理页
-├── server.js            # Express 后端入口
-├── css/style.css        # 全局样式
+├── index.html                # 地图主页
+├── server.js                 # Express 后端入口
+├── css/
+│   └── style.css             # 全局样式（桌面+手机 @media）
 ├── js/
-│   ├── api.js           # 前端 API 封装
-│   ├── map.js           # 地图初始化、标注渲染、详情弹窗
-│   ├── search.js        # 搜索逻辑
-│   └── admin.js         # 后台管理逻辑
-├── routes/
-│   ├── auth.js          # 登录认证
-│   ├── buildings.js     # 建筑 CRUD（需登录）
-│   └── canteens.js      # 食堂菜单管理（需登录）
+│   ├── data.js               # 内嵌静态数据（63栋建筑+活动）
+│   ├── api.js                # 前端 API 封装（双模式自动切换）
+│   ├── map.js                # 地图初始化、标注、导航、详情面板
+│   ├── search-v2.js          # 搜索（拼音+汉字+分类筛选）
+│   ├── events.js             # 活动日历（列表/日历双视图+手机端横条）
+│   └── weather.js            # 天气组件
 ├── data/
-│   ├── buildings.json   # 建筑数据
-│   └── canteens.json    # 食堂菜单
-├── scripts/
-│   └── init-admin.js    # 管理员初始化脚本
-└── public/uploads/      # 建筑照片
+│   ├── buildings.json        # 建筑数据（63栋）
+│   └── canteens.json         # 食堂菜单
+├── public/
+│   └── images/buildings/     # 建筑实拍照片（42栋）
+├── docs/
+│   └── 期末汇报-答辩准备.md   # 期末汇报材料
+└── scripts/                  # 各类工具脚本
 ```
 
-## 待办
+## 数据统计
 
-- [ ] 获取高德地图 Key 替换 `index.html` 中的 `YOUR_AMAP_KEY`
-- [ ] 用高德坐标拾取器校准建筑坐标：https://lbs.amap.com/tools/picker
-- [ ] 补充更多建筑数据和食堂菜单
-- [ ] 拍摄/收集建筑照片
+| 类别 | 数量 |
+|------|------|
+| 建筑总数 | 63 栋 |
+| 实拍照片 | 42 栋 |
+| 食堂 | 3 个（含完整菜单） |
+| 校园活动 | 5 条 |
+| 建筑分类 | 8 种 |
+
+## 导航模式
+
+| 模式 | 实现 | 路线方案 |
+|------|------|---------|
+| 步行 | AMap.Walking | 多方案搜索 |
+| 驾车 | AMap.Driving | 最快/最短/省钱 3 种策略 |
+| 骑行 | AMap.Riding | 多方案搜索 |
 
 ## 部署
 
-上线前需要：
-- 修改 `server.js` 中的 `session.secret` 为随机字符串
-- 使用 PM2 管理 Node 进程
-- 配置 Nginx 反向代理 + HTTPS
+### GitHub Pages（推荐）
+推送 `mobile-ui-v2` 分支即自动部署：
+```bash
+git push origin mobile-ui-v2
+```
+线上地址：`https://maofaw.github.io/ynnu-campus/`
+
+### 本地服务器
+```bash
+node server.js
+```
+访问 `http://localhost:3000`
