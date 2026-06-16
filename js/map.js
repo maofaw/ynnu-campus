@@ -117,6 +117,9 @@ function bindControls() {
     });
   }
 
+  // 3D 视图切换
+  init3DView();
+
   // 手机端抽屉触摸拖拽（M2）
   initDrawerDrag();
 
@@ -467,9 +470,16 @@ function showDetail(building) {
 
   const categoryLabel = CATEGORY_LABELS[building.category] || '其他';
   const tags = (building.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
-  const images = (building.images || []).map(img =>
-    `<img src="${img}" alt="${building.name}" class="detail-image" onerror="this.style.display='none'">`
-  ).join('');
+  const hasImages = building.images && building.images.length > 0;
+  const imagesHTML = hasImages
+    ? building.images.map(img =>
+        `<img src="${img}" alt="${building.name}" class="detail-image" onerror="this.style.display='none'">`
+      ).join('')
+    : `<div class="detail-no-photo">
+         <div class="no-photo-icon">📷</div>
+         <div class="no-photo-text">暂无照片</div>
+         <div class="no-photo-hint">照片采集中，敬请期待</div>
+       </div>`;
 
   // 信息行
   let infoSection = '';
@@ -527,7 +537,7 @@ function showDetail(building) {
       <span class="category-badge" style="background:${CATEGORY_COLORS[building.category]}">${categoryLabel}</span>
       <h2>${building.name}</h2>
     </div>
-    ${images ? `<div class="detail-images">${images}</div>` : ''}
+    <div class="detail-images">${imagesHTML}</div>
     <div class="detail-tags">${tags}</div>
     <p class="detail-desc">${building.description || '暂无介绍'}</p>
     ${infoSection ? `<div class="detail-info-section">${infoSection}</div>` : ''}
@@ -868,6 +878,30 @@ function hideMarkersExcept(startObj, endObj) {
 function restoreAllMarkers(buildings) {
   clearMarkers();
   buildings.forEach(b => createMarker(b));
+}
+
+// ──────────────────────────────────
+// 3D 视图切换（新3）
+// ──────────────────────────────────
+let is3D = false;
+function init3DView() {
+  const btn = document.getElementById('view3dBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    is3D = !is3D;
+    if (is3D) {
+      map.setPitch(60);
+      map.setRotation(30);
+      map.setZooms([3, 20]);
+      map.setZoom(17);
+      btn.classList.add('active');
+    } else {
+      map.setPitch(0);
+      map.setRotation(0);
+      btn.classList.remove('active');
+      switchLayer(currentLayer);
+    }
+  });
 }
 
 // ──────────────────────────────────

@@ -40,7 +40,10 @@
 
       <!-- 近期活动 -->
       <div class="events-strip" id="events-strip">
-        <div class="events-strip-title">📢 近期活动</div>
+        <div class="events-strip-title">
+          <span>📢 近期活动</span>
+          <button class="calendar-view-toggle" onclick="toggleCalendarView()" id="cal-toggle-btn">📅 日历</button>
+        </div>
         <div class="events-scroll" id="events-scroll">
           <div class="events-loading">加载中...</div>
         </div>
@@ -82,6 +85,7 @@
       <div class="map-controls-right">
         <button class="control-btn active" id="vectorBtn" title="矢量地图">🗺️</button>
         <button class="control-btn" id="satelliteBtn" title="卫星地图">🛰️</button>
+        <button class="control-btn" id="view3dBtn" title="3D视图">🏙️</button>
         <button class="control-btn" id="locateBtn" title="定位">📍</button>
       </div>
 
@@ -139,6 +143,7 @@
   <script src="js/api.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/search-v2.js"></script>
+  <script src="js/events.js"></script>
   <script src="js/map.js"></script>
 </body>
 </html>
