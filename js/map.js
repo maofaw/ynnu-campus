@@ -10,6 +10,8 @@ let currentPosition = null;
 let routeStart = null;
 let routeEnd = null;
 let currentCategory = 'all';
+let startMarker = null;
+let navMode = 'walking';
 
 // 分类对应图标颜色
 const CATEGORY_COLORS = {
@@ -615,11 +617,34 @@ function updateRouteBar() {
 function planRoute(mode) {
   if (!routeStart || !routeEnd) return;
   mode = mode || 'walking';
+  navMode = mode;
 
+  // 清除旧路线 + 信息卡
   clearRoutes();
+  hideNavCard();
+
+  // 隐藏非起终点标注，自动聚焦起点（N1）
+  hideMarkersExcept(routeStart, routeEnd);
+  const startPos = [routeStart.lng, routeStart.lat];
+  map.setZoomAndCenter(17, startPos);
+  addStartMarker(startPos);
+
+  // 手机端导航隐藏搜索栏（N5）
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.add('nav-active');
+  }
 
   const start = [routeStart.lng, routeStart.lat];
   const end = [routeEnd.lng, routeEnd.lat];
+
+  function fitRoute() {
+    try {
+      map.setFitView([start, end], false, [80, 80, 200, 80]);
+    } catch(e) {
+      map.setZoomAndCenter(16, [(start[0]+end[0])/2, (start[1]+end[1])/2]);
+    }
+  }
 
   if (mode === 'walking') {
     AMap.plugin('AMap.Walking', () => {
@@ -627,10 +652,13 @@ function planRoute(mode) {
       walking.search(start, end, (status, result) => {
         if (status === 'complete') {
           walkingRoute = walking;
+          drivingRoute = null;
           const r = result.routes[0] || result;
           const dist = (r.distance / 1000).toFixed(1);
           const dur = Math.round(r.time / 60);
           showToast(`🚶 ${routeStart.name} → ${routeEnd.name}：${dist}km，约${dur}分钟`);
+          showNavCard('walking', routeStart.name, routeEnd.name, result);
+          setTimeout(fitRoute, 300);
         } else {
           showToast('路线规划失败');
         }
@@ -642,10 +670,13 @@ function planRoute(mode) {
       driving.search(start, end, (status, result) => {
         if (status === 'complete') {
           drivingRoute = driving;
+          walkingRoute = null;
           const r = result.routes[0] || result;
           const dist = (r.distance / 1000).toFixed(1);
           const dur = Math.round(r.time / 60);
           showToast(`🚗 ${routeStart.name} → ${routeEnd.name}：${dist}km，约${dur}分钟`);
+          showNavCard('driving', routeStart.name, routeEnd.name, result);
+          setTimeout(fitRoute, 300);
         } else {
           showToast('路线规划失败');
         }
@@ -656,10 +687,16 @@ function planRoute(mode) {
 
 function clearAllRoutes() {
   clearRoutes();
+  if (startMarker) { startMarker.setMap(null); startMarker = null; }
   routeStart = null;
   routeEnd = null;
+  hideNavCard();
+  restoreAllMarkers(allBuildings);
   const bar = document.getElementById('route-bar');
   if (bar) bar.classList.remove('active');
+  // 手机端恢复搜索栏（N5）
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.remove('nav-active');
   showToast('已清除路线');
 }
 
@@ -726,6 +763,82 @@ function showError(msg) {
   toast.textContent = msg;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
+}
+
+// ──────────────────────────────────
+// 导航信息卡（N2）
+// ──────────────────────────────────
+
+function showNavCard(mode, fromName, toName, result) {
+  navMode = mode;
+  const card = document.getElementById('nav-card');
+  const icon = document.getElementById('nav-card-icon');
+  const route = document.getElementById('nav-card-route');
+  const stats = document.getElementById('nav-card-stats');
+  const walkBtn = document.getElementById('nav-mode-walk');
+  const driveBtn = document.getElementById('nav-mode-drive');
+
+  if (!card) return;
+
+  icon.textContent = mode === 'walking' ? '🚶' : '🚗';
+  route.textContent = `${fromName} → ${toName}`;
+
+  const r = result.routes[0] || result;
+  const dist = (r.distance / 1000).toFixed(1);
+  const dur = Math.round(r.time / 60);
+  stats.textContent = `${dist}km · 约${dur}分钟`;
+
+  walkBtn.classList.toggle('active', mode === 'walking');
+  driveBtn.classList.toggle('active', mode === 'driving');
+
+  card.classList.remove('nav-card-hidden');
+  card.classList.add('nav-card-visible');
+
+  const bar = document.getElementById('route-bar');
+  if (bar) bar.classList.remove('active');
+}
+
+function hideNavCard() {
+  const card = document.getElementById('nav-card');
+  if (card) {
+    card.classList.remove('nav-card-visible');
+    card.classList.add('nav-card-hidden');
+  }
+}
+
+// ──────────────────────────────────
+// 导航标注控制（N1）
+// ──────────────────────────────────
+
+function addStartMarker(pos) {
+  if (startMarker) startMarker.setMap(null);
+  startMarker = new AMap.Marker({
+    position: pos,
+    icon: new AMap.Icon({
+      size: new AMap.Size(20, 20),
+      image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+      imageSize: new AMap.Size(20, 20)
+    }),
+    zIndex: 101,
+    anchor: 'center'
+  });
+  startMarker.setMap(map);
+}
+
+function hideMarkersExcept(startObj, endObj) {
+  markers.forEach(m => {
+    const pos = m.getPosition();
+    const isStart = pos.lng === startObj.lng && pos.lat === startObj.lat;
+    const isEnd = pos.lng === endObj.lng && pos.lat === endObj.lat;
+    if (!isStart && !isEnd) {
+      m.setMap(null);
+    }
+  });
+}
+
+function restoreAllMarkers(buildings) {
+  clearMarkers();
+  buildings.forEach(b => createMarker(b));
 }
 
 // 页面加载完成后初始化

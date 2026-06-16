@@ -1097,3 +1097,36 @@ mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; 
   .map-legend { bottom: 8px; left: 8px; padding: 6px 10px; }
   .map-legend .legend-item { font-size: 10px; }
 }
+
+/* ============================================
+   导航信息卡
+   ============================================ */
+#nav-card {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  padding: 16px 20px;
+  z-index: 50;
+  min-width: 320px;
+  max-width: 90vw;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.nav-card-hidden { transform: translateX(-50%) translateY(120px); opacity: 0; pointer-events: none; }
+.nav-card-visible { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+
+.nav-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.nav-card-icon { font-size: 24px; }
+.nav-card-route { font-size: 15px; font-weight: 600; color: #333; }
+.nav-card-stats { font-size: 13px; color: #666; margin-bottom: 10px; }
+
+.nav-card-actions { display: flex; gap: 8px; }
+.nav-mode-btn {
+  flex: 1; padding: 8px 0; border: 1.5px solid #e0e0e0; border-radius: 8px;
+  background: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.nav-mode-btn.active { border-color: #1565c0; background: #e3f2fd; }
+.nav-stop-btn { padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
