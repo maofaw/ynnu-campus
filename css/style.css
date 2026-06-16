@@ -412,6 +412,9 @@ html, body {
   flex-shrink: 0;
 }
 
+/* 导航时隐藏活动卡片，防止遮挡路线 */
+.sidebar.nav-active .events-strip { display: none; }
+
 .events-strip-title {
   font-size: 12px;
   font-weight: 600;
@@ -1130,6 +1133,19 @@ mark { background: #fff1b8; color: inherit; padding: 0 2px; border-radius: 2px; 
 }
 .nav-mode-btn.active { border-color: #1565c0; background: #e3f2fd; }
 .nav-stop-btn { padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+/* ETA */
+.nav-card-eta { color: #52c41a; font-weight: 500; }
+
+/* 路线方案切换 */
+.nav-card-alts { display: none; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.route-alt-pill {
+  font-size: 11px; padding: 3px 10px; border-radius: 12px;
+  background: #f0f0f0; cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+}
+.route-alt-pill.active { background: #1890ff; color: #fff; }
+.route-alt-pill:hover:not(.active) { background: #e0e0e0; }
 
 /* ============================================
    手机端适配（≤768px）— 抽屉面板 M1

@@ -6,12 +6,15 @@ let markers = [];
 let allBuildings = [];
 let walkingRoute = null;
 let drivingRoute = null;
+let ridingRoute = null;
 let currentPosition = null;
 let routeStart = null;
 let routeEnd = null;
 let currentCategory = 'all';
 let startMarker = null;
 let navMode = 'walking';
+let lastRouteAlts = [];
+let lastRouteIdx = 0;
 
 // 分类对应图标颜色
 const CATEGORY_COLORS = {
@@ -548,8 +551,9 @@ function showDetail(building) {
       <button class="btn-end" onclick="setRouteEnd(${building.lng},${building.lat},'${escapeHtml(building.name)}')">🏁 设为终点</button>
     </div>
     <div class="detail-nav-btns">
-      <button class="btn-primary" onclick="navigateTo(${building.lng},${building.lat},'walking')">🚶 步行导航</button>
-      <button class="btn-outline" onclick="navigateTo(${building.lng},${building.lat},'driving')">🚗 驾车导航</button>
+      <button class="btn-primary" onclick="navigateTo(${building.lng},${building.lat},'${escapeHtml(building.name)}','walking')">🚶 步行导航</button>
+      <button class="btn-outline" onclick="navigateTo(${building.lng},${building.lat},'${escapeHtml(building.name)}','riding')">🚲 骑行</button>
+      <button class="btn-outline" onclick="navigateTo(${building.lng},${building.lat},'${escapeHtml(building.name)}','driving')">🚗 驾车导航</button>
     </div>
     <button class="btn-text" onclick="clearAllRoutes()">🗑️ 清除路线</button>
   `;
@@ -611,46 +615,13 @@ async function loadCanteenMenu(buildingId) {
 function setRouteStart(lng, lat, name) {
   routeStart = { lng, lat, name };
   showToast(`📍 起点：${name}`);
-  updateRouteBar();
-  if (routeEnd) planRoute();
+  if (routeEnd) planRoute(navMode);
 }
 
 function setRouteEnd(lng, lat, name) {
   routeEnd = { lng, lat, name };
   showToast(`🏁 终点：${name}`);
-  updateRouteBar();
-  if (routeStart) planRoute();
-}
-
-function updateRouteBar() {
-  let bar = document.getElementById('route-bar');
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = 'route-bar';
-    document.body.appendChild(bar);
-  }
-
-  const from = routeStart ? routeStart.name : '?';
-  const to = routeEnd ? routeEnd.name : '?';
-
-  if (routeStart && routeEnd) {
-    bar.innerHTML = `
-      <span class="route-info"><b>${from}</b> → <b>${to}</b></span>
-      <span class="route-actions">
-        <button class="route-mode-btn" onclick="planRoute('walking')">🚶 步行</button>
-        <button class="route-mode-btn" onclick="planRoute('driving')">🚗 驾车</button>
-        <button class="route-mode-btn route-clear" onclick="clearAllRoutes()">✕</button>
-      </span>
-    `;
-    bar.classList.add('active');
-    planRoute('walking');
-  } else if (routeStart || routeEnd) {
-    bar.innerHTML = `
-      <span class="route-info">${routeStart ? `起点：${from}` : `终点：${to}`} — 请选择${routeStart ? '终点' : '起点'}</span>
-      <button class="route-mode-btn route-clear" onclick="clearAllRoutes()">✕</button>
-    `;
-    bar.classList.add('active');
-  }
+  if (routeStart) planRoute(navMode);
 }
 
 function planRoute(mode) {
@@ -658,9 +629,14 @@ function planRoute(mode) {
   mode = mode || 'walking';
   navMode = mode;
 
-  // 清除旧路线 + 信息卡
+  // 清除旧路线 + 信息卡 + 关闭详情面板
   clearRoutes();
   hideNavCard();
+  const detailPanel = document.getElementById('detail-panel');
+  if (detailPanel) {
+    detailPanel.classList.remove('detail-visible');
+    detailPanel.classList.add('detail-hidden');
+  }
 
   // 隐藏非起终点标注，自动聚焦起点（N1）
   hideMarkersExcept(routeStart, routeEnd);
@@ -668,11 +644,9 @@ function planRoute(mode) {
   map.setZoomAndCenter(17, startPos);
   addStartMarker(startPos);
 
-  // 手机端导航隐藏搜索栏（N5）
-  if (window.innerWidth <= 768) {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.add('nav-active');
-  }
+  // 导航时隐藏活动卡片 + 手机端隐藏搜索栏（N5）
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.add('nav-active');
 
   const start = [routeStart.lng, routeStart.lat];
   const end = [routeEnd.lng, routeEnd.lat];
@@ -685,6 +659,18 @@ function planRoute(mode) {
     }
   }
 
+  function onComplete(type, routeObj, result) {
+    lastRouteAlts = result.routes || [];
+    lastRouteIdx = 0;
+    const r = lastRouteAlts[0] || result;
+    const dist = (r.distance / 1000).toFixed(1);
+    const dur = Math.round(r.time / 60);
+    const icons = { walking: '🚶', driving: '🚗', riding: '🚲' };
+    showToast(`${icons[type]} ${routeStart.name} → ${routeEnd.name}：${dist}km，约${dur}分钟`);
+    showNavCard(type, routeStart.name, routeEnd.name, result);
+    setTimeout(fitRoute, 300);
+  }
+
   if (mode === 'walking') {
     AMap.plugin('AMap.Walking', () => {
       const walking = new AMap.Walking({ map });
@@ -692,15 +678,9 @@ function planRoute(mode) {
         if (status === 'complete') {
           walkingRoute = walking;
           drivingRoute = null;
-          const r = result.routes[0] || result;
-          const dist = (r.distance / 1000).toFixed(1);
-          const dur = Math.round(r.time / 60);
-          showToast(`🚶 ${routeStart.name} → ${routeEnd.name}：${dist}km，约${dur}分钟`);
-          showNavCard('walking', routeStart.name, routeEnd.name, result);
-          setTimeout(fitRoute, 300);
-        } else {
-          showToast('路线规划失败');
-        }
+          ridingRoute = null;
+          onComplete('walking', walking, result);
+        } else { showToast('路线规划失败'); }
       });
     });
   } else if (mode === 'driving') {
@@ -710,15 +690,21 @@ function planRoute(mode) {
         if (status === 'complete') {
           drivingRoute = driving;
           walkingRoute = null;
-          const r = result.routes[0] || result;
-          const dist = (r.distance / 1000).toFixed(1);
-          const dur = Math.round(r.time / 60);
-          showToast(`🚗 ${routeStart.name} → ${routeEnd.name}：${dist}km，约${dur}分钟`);
-          showNavCard('driving', routeStart.name, routeEnd.name, result);
-          setTimeout(fitRoute, 300);
-        } else {
-          showToast('路线规划失败');
-        }
+          ridingRoute = null;
+          onComplete('driving', driving, result);
+        } else { showToast('路线规划失败'); }
+      });
+    });
+  } else if (mode === 'riding') {
+    AMap.plugin('AMap.Riding', () => {
+      const riding = new AMap.Riding({ map });
+      riding.search(start, end, (status, result) => {
+        if (status === 'complete') {
+          ridingRoute = riding;
+          walkingRoute = null;
+          drivingRoute = null;
+          onComplete('riding', riding, result);
+        } else { showToast('骑行路线规划失败'); }
       });
     });
   }
@@ -729,10 +715,9 @@ function clearAllRoutes() {
   if (startMarker) { startMarker.setMap(null); startMarker = null; }
   routeStart = null;
   routeEnd = null;
+  lastRouteAlts = [];
   hideNavCard();
   restoreAllMarkers(allBuildings);
-  const bar = document.getElementById('route-bar');
-  if (bar) bar.classList.remove('active');
   // 手机端恢复搜索栏（N5）
   const sidebar = document.getElementById('sidebar');
   if (sidebar) sidebar.classList.remove('nav-active');
@@ -742,46 +727,20 @@ function clearAllRoutes() {
 function clearRoutes() {
   if (walkingRoute) { walkingRoute.clear(); walkingRoute = null; }
   if (drivingRoute) { drivingRoute.clear(); drivingRoute = null; }
+  if (ridingRoute) { ridingRoute.clear(); ridingRoute = null; }
 }
 
-function navigateTo(lng, lat, mode) {
+function navigateTo(lng, lat, name, mode) {
+  // 兼容旧调用：navigateTo(lng, lat, mode) 无 name
+  if (name === 'walking' || name === 'driving' || name === 'riding') {
+    mode = name;
+    name = '目的地';
+  }
   mode = mode || 'walking';
   const start = currentPosition || YNNU_CENTER;
-  const end = [lng, lat];
-
-  clearRoutes();
-
-  if (mode === 'walking') {
-    AMap.plugin('AMap.Walking', () => {
-      const walking = new AMap.Walking({ map });
-      walking.search(start, end, (status, result) => {
-        if (status === 'complete') {
-          walkingRoute = walking;
-          const steps = result.routes[0] || result;
-          const dist = (steps.distance / 1000).toFixed(1);
-          const dur = Math.round(steps.time / 60);
-          showToast(`🚶 步行 ${dist}km，约 ${dur} 分钟`);
-        } else {
-          showToast('步行路线规划失败，请稍后重试');
-        }
-      });
-    });
-  } else if (mode === 'driving') {
-    AMap.plugin('AMap.Driving', () => {
-      const driving = new AMap.Driving({ map });
-      driving.search(start, end, (status, result) => {
-        if (status === 'complete') {
-          drivingRoute = driving;
-          const steps = result.routes[0] || result;
-          const dist = (steps.distance / 1000).toFixed(1);
-          const dur = Math.round(steps.time / 60);
-          showToast(`🚗 驾车 ${dist}km，约 ${dur} 分钟`);
-        } else {
-          showToast('驾车路线规划失败，请稍后重试');
-        }
-      });
-    });
-  }
+  routeStart = { lng: start[0], lat: start[1], name: '我的位置' };
+  routeEnd = { lng, lat, name: name };
+  planRoute(mode);
 }
 
 // ──────────────────────────────────
@@ -808,33 +767,58 @@ function showError(msg) {
 // 导航信息卡（N2）
 // ──────────────────────────────────
 
-function showNavCard(mode, fromName, toName, result) {
+function updateNavCardData(mode, fromName, toName, result) {
   navMode = mode;
-  const card = document.getElementById('nav-card');
   const icon = document.getElementById('nav-card-icon');
   const route = document.getElementById('nav-card-route');
   const stats = document.getElementById('nav-card-stats');
+  const altBar = document.getElementById('nav-card-alts');
   const walkBtn = document.getElementById('nav-mode-walk');
   const driveBtn = document.getElementById('nav-mode-drive');
+  const rideBtn = document.getElementById('nav-mode-ride');
 
-  if (!card) return;
+  if (!icon || !route || !stats) return;
 
-  icon.textContent = mode === 'walking' ? '🚶' : '🚗';
+  const icons = { walking: '🚶', driving: '🚗', riding: '🚲' };
+  icon.textContent = icons[mode] || '🚶';
   route.textContent = `${fromName} → ${toName}`;
 
-  const r = result.routes[0] || result;
+  const r = lastRouteAlts[0] || result;
   const dist = (r.distance / 1000).toFixed(1);
   const dur = Math.round(r.time / 60);
-  stats.textContent = `${dist}km · 约${dur}分钟`;
 
-  walkBtn.classList.toggle('active', mode === 'walking');
-  driveBtn.classList.toggle('active', mode === 'driving');
+  // ETA
+  const now = new Date();
+  const arrival = new Date(now.getTime() + r.time * 1000);
+  const eta = `${arrival.getHours().toString().padStart(2,'0')}:${arrival.getMinutes().toString().padStart(2,'0')}`;
+  stats.innerHTML = `${dist}km · 约${dur}分钟 · <span class="nav-card-eta">预计 ${eta} 到达</span>`;
 
-  card.classList.remove('nav-card-hidden');
-  card.classList.add('nav-card-visible');
+  // 模式按钮高亮
+  if (walkBtn) walkBtn.classList.toggle('active', mode === 'walking');
+  if (driveBtn) driveBtn.classList.toggle('active', mode === 'driving');
+  if (rideBtn) rideBtn.classList.toggle('active', mode === 'riding');
 
-  const bar = document.getElementById('route-bar');
-  if (bar) bar.classList.remove('active');
+  // 路线方案切换
+  if (altBar && lastRouteAlts.length > 1) {
+    altBar.innerHTML = lastRouteAlts.map((rt, i) => {
+      const d = (rt.distance / 1000).toFixed(1);
+      const t = Math.round(rt.time / 60);
+      return `<span class="route-alt-pill ${i === lastRouteIdx ? 'active' : ''}"
+              onclick="switchRoute(${i})">方案${i+1} ${d}km ${t}分钟</span>`;
+    }).join('');
+    altBar.style.display = 'flex';
+  } else if (altBar) {
+    altBar.style.display = 'none';
+  }
+}
+
+function showNavCard(mode, fromName, toName, result) {
+  updateNavCardData(mode, fromName, toName, result);
+  const card = document.getElementById('nav-card');
+  if (card) {
+    card.classList.remove('nav-card-hidden');
+    card.classList.add('nav-card-visible');
+  }
 }
 
 function hideNavCard() {
@@ -842,6 +826,31 @@ function hideNavCard() {
   if (card) {
     card.classList.remove('nav-card-visible');
     card.classList.add('nav-card-hidden');
+  }
+}
+
+// 切换路线方案
+function switchRoute(idx) {
+  if (!routeStart || !routeEnd || !lastRouteAlts[idx]) return;
+  lastRouteIdx = idx;
+  clearRoutes();
+  // 用当前模式重新规划（driving 用不同策略）
+  if (navMode === 'driving' && idx < 3) {
+    const policies = [0, 2, 1]; // 最快/最短/少收费
+    AMap.plugin('AMap.Driving', () => {
+      const driving = new AMap.Driving({ map, policy: policies[idx] });
+      driving.search([routeStart.lng, routeStart.lat], [routeEnd.lng, routeEnd.lat], (status, result) => {
+        if (status === 'complete') {
+          drivingRoute = driving;
+          walkingRoute = null;
+          ridingRoute = null;
+          lastRouteAlts = result.routes || [];
+          updateNavCardData('driving', routeStart.name, routeEnd.name, result);
+        }
+      });
+    });
+  } else {
+    planRoute(navMode);
   }
 }
 
