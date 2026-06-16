@@ -390,7 +390,8 @@ html, body {
   transition: background 0.15s;
 }
 
-#search-results li:hover { background: #f0f5ff; }
+#search-results li:hover,
+#search-results li.selected { background: #f0f5ff; }
 
 #search-results li .result-name { font-weight: 500; flex: 1; }
 
@@ -398,6 +399,10 @@ html, body {
   font-size: 11px;
   color: #999;
 }
+
+#search-results li.no-result { color: #999; cursor: default; }
+#search-results li.no-result:hover { background: transparent; }
+#search-results mark { background: #fff3cd; color: #333; padding: 0 2px; border-radius: 2px; }
 
 /* ── 近期活动滚动卡片 ── */
 .events-strip {
